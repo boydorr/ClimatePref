@@ -32,6 +32,7 @@
 #Pkg.build("ArchGDAL")
 
 using Unitful
+using Unitful.DefaultSymbols
 using myunitful
 using AxisArrays
 
@@ -40,6 +41,8 @@ import ArchGDAL
 import Base.read
 const AG = ArchGDAL
 
+vardict = Dict("bio" => NaN, "prec" => mm, "srad" => u"kJ"* u"m"^-2 * day^-1,
+"tavg" => °C, "tmax" => °C, "tmin" => °C, "vapr" => u"kPa", "wind" => u"m" * u"s"^-1)
 """
     read(f, filename)
 
@@ -89,13 +92,16 @@ function extractfolder(dir::String)
     b[:, :, count] = a
     end
     lat, long = size(b, 1), size(b, 2);
+    variable = split(dir, "wc2.0_5m_")[2]
+    unit = vardict[variable]
     step = 180.0° / long;
     if numfiles == 12
         thirdaxis = Axis{:time}(1month:1month:12month)
     else
         thirdaxis = Axis{:var}(1:1:numfiles)
+        unit = 1.0
     end
-    world = AxisArray(b[:, long:-1:1, :] * °C,
+    world = AxisArray(b[:, long:-1:1, :] * unit,
                            Axis{:latitude}(-180.0°:step:(180.0° - step / 2)),
                            Axis{:longitude}(-90.0°:step:(90.0°-step/2)),
                            thirdaxis);
@@ -165,14 +171,15 @@ locations, over all axes.
 """
 function extractvalues(x::Vector{typeof(1.0°)},y::Vector{typeof(1.0°)},
    array::AbstractArray)
+   thisstep = step(axes(array[1], 1).val)
    all(x .<= 180.0) && all(x .>= -180.0) ||
    error("X coordinate is out of bounds")
    all(y .< 90.0) && all(y .> -90.0) ||
    error("Y coordinate is out of bounds")
    map(array) do array
     dim = axes(array, 3).val
-    res = map((i, j) -> array[(i-step/2)..(i+step/2),
-                              (j-step/2)..(j+step/2),
+    res = map((i, j) -> array[(i-thisstep/2)..(i+thisstep/2),
+                              (j-thisstep/2)..(j+thisstep/2),
                               start(dim)..last(dim)][1,1,:], x, y)
     transpose(hcat(res...))
     end
