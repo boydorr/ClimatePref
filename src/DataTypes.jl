@@ -14,8 +14,8 @@ end
 mutable struct Bioclim <: AbstractClimate
     array::AxisArray
     function Bioclim(array::AxisArray)
-        size(array, 3) == 9 ||
-            error("There should 9 climate variables for bioclim")
+        size(array, 3) == 19 ||
+            error("There should 19 climate variables for bioclim")
         new(array)
     end
 end
