@@ -14,25 +14,37 @@ y[y .≈ -32767] = NaN
 temps = y .* 0.0009362609303530759K .+ 270.9726153656286K
 
 ncinfo("data/era_interim_moda_1990")
+lat = reverse(ncread("data/era_interim_moda_1990", "latitude"))
+lon = ncread("data/era_interim_moda_1990", "longitude")
 twomtemp = ncread("data/era_interim_moda_1990", "t2m")
 twomtemp = twomtemp * 1.0
+
+splitval = find(lon .== 180)[1]
+firstseg = collect((splitval+1):size(twomtemp,1))
+secondseg = collect(1:splitval)
+twomtemp = twomtemp[vcat(firstseg ,secondseg), :, :]
+lon[firstseg] = 180 - lon[firstseg]
+lon = lon[vcat(reverse(firstseg) ,secondseg)]
 
 twomtemp[twomtemp .≈ -32767] = NaN
 temps = twomtemp .* 0.0017312391138308897K .+ 270.9726153656286K
 tempsC = uconvert.(°C, temps)
-tempsC=ustrip.(tempsC)
+tempsC = ustrip.(tempsC)[:,end:-1:1, :]
 step1 = 0.75°
 step2 = 180°/241
 tempax = AxisArray(uconvert.(°C, temps),
-                       Axis{:latitude}(-180.0°:step1:(180.0° - step1 / 2)),
-                       Axis{:longitude}(-90.0°:step2:(90.0°-step2/2)),
+                       Axis{:longitude}(lon * °),
+                       Axis{:latitude}(lat * °),
                        Axis{:time}(1month:1month:10year))
 using RCall
 @rput tempsC
-step1u = ustrip(step1)
-step2u = ustrip(step2)
-@rput step1u; @rput step2u
+@rput lat; @rput lon
 R"pdf(file='plots/testERAint.pdf', paper = 'a4r', height= 8.27, width=11.69 )
-image.plot(seq(-180, 180, by=step1u),
-seq(-90, 90, by=step2u), tempsC[,,1], xlab='', ylab='')
+library(rgdal)
+library(fields)
+world = readOGR('data/ne_10m_land/ne_10m_land.shp', layer='ne_10m_land')
+image.plot(lon, lat, tempsC[,,1], xlab='', ylab='')
+plot(world, add = T)
+dev.off()"
+
 dev.off()"
