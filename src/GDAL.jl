@@ -96,13 +96,14 @@ function extractfile(dir::String)
     end;
     world
 end
+
 """
-    extractfolder(dir::String)
+    extractworldclim(dir::String)
 
 Function to extract all raster files from a specified folder directory,
 and convert into an axis array.
 """
-function extractfolder(dir::String)
+function extractworldclim(dir::String)
     files = map(searchdir(dir, ".tif")) do files
         joinpath(dir, files)
     end
@@ -129,34 +130,98 @@ function extractfolder(dir::String)
     variable = split(dir, "wc2.0_5m_")[2]
     unit = vardict[variable]
     step = 180.0° / long;
-    if numfiles == 12
-        thirdaxis = Axis{:time}(1month:1month:12month)
-    else
-        thirdaxis = Axis{:var}(1:1:numfiles)
-        unit = 1.0
-    end
+
     world = AxisArray(b[:, long:-1:1, :] * unit,
                            Axis{:latitude}(-180.0°:step:(180.0° - step / 2)),
                            Axis{:longitude}(-90.0°:step:(90.0°-step/2)),
-                           thirdaxis);
+                           Axis{:time}(1month:1month:12month));
+
+    if txy[1] <: AbstractFloat
+        world[world .== world[Axis{:latitude}(0°),
+                                             Axis{:longitude}(0°),
+                                             Axis{:time}(1month)]] *= NaN;
+    end;
+    Worldclim(world)
+end
+
+"""
+    extractbioclim(dir::String)
+
+Function to extract all raster files from a specified folder directory,
+and convert into an axis array.
+"""
+function extractbioclim(dir::String)
+    files = map(searchdir(dir, ".tif")) do files
+        joinpath(dir, files)
+    end
+    txy = [Float32, Int32(1), Int32(1)];
+
+    read(files[1]) do dataset
+        txy[1] = AG.getdatatype(AG.getband(dataset, 1))
+        txy[2] = AG.width(AG.getband(dataset, 1))
+        txy[3] = AG.height(AG.getband(dataset, 1))
+        print(dataset)
+    end
+
+    numfiles = length(files)
+    b = Array{txy[1], 3}(Int64(txy[2]), Int64(txy[3]), numfiles);
+    map(eachindex(files)) do count
+    a = Array{txy[1], 2}(txy[2], txy[3]);
+    read(files[count]) do dataset
+        bd = AG.getband(dataset, 1);
+        AG.read!(bd, a);
+    end;
+    b[:, :, count] = a
+    end
+    lat, long = size(b, 1), size(b, 2);
+    step = 180.0° / long;
+    unit = 1.0
+
+    world = AxisArray(b[:, long:-1:1, :] * unit,
+                           Axis{:latitude}(-180.0°:step:(180.0° - step / 2)),
+                           Axis{:longitude}(-90.0°:step:(90.0°-step/2)),
+                           Axis{:var}(1:1:numfiles));
 
     if txy[1] <: AbstractFloat
         world[world .== world[Axis{:latitude}(0°),
                                              Axis{:longitude}(0°),
                                              thirdaxis(thirdaxis[1])]] *= NaN;
     end;
-    world
+    Bioclim(world)
 end
 """
-    extractfolders(dir::String, folders::Array{String, 1})
+    extractERA(dir::String, param::String, dim::StepRange(typeof(1month)))
 
-Function to extract all raster files from several specified folder directories,
-`folders`, and convert into an axis array.
+Function to extract a certain parameter, `param`, from an ERA netcdf file,
+for a certain timerange, `dim`, and convert into an axis array.
 """
-function extractfolders(dir::String, folders::Array{String, 1})
-    extract = map(folders) do folder
-        extractfolder(joinpath(dir, folder))
+function extractERA(dir::String, param::String, dim::Vector{T}) where T<: Unitful.Time
+    lat = reverse(ncread(dir, "latitude"))
+    lon = ncread(dir, "longitude")
+    units = ncgetatt(dir, param, "units")
+    units = unitdict[units]
+    array = ncread(dir, param)
+    array = array * 1.0
+    array[array .≈ ncgetatt(dir, param, "_FillValue")] = NaN
+    scale_factor = ncgetatt(dir, param, "scale_factor") * units
+    add_offset = ncgetatt(dir, param, "add_offset") * units
+    array = array .* scale_factor .+ add_offset
+
+    # If temperature param, need to convert from Kelvin
+    if typeof(units) <: Unitful.TemperatureUnits
+        array = uconvert.(°C, array)
     end
+    if any(lon .== 180)
+        splitval = find(lon .== 180)[1]
+        firstseg = collect((splitval+1):size(array,1))
+        secondseg = collect(1:splitval)
+        array = array[vcat(firstseg ,secondseg), :, :]
+        lon[firstseg] = 180 - lon[firstseg]
+        lon = lon[vcat(reverse(firstseg), secondseg)]
+    end
+    world = AxisArray(array[:, end:-1:1, :], Axis{:longitude}(lon * °), Axis{:latitude}(lat * °),
+                        Axis{:time}(collect(dim)))
+    ERA(world)
 end
 
 
