@@ -217,3 +217,18 @@ function extractvalues(x::Vector{typeof(1.0°)},y::Vector{typeof(1.0°)},
     transpose(hcat(res...))
     end
 end
+
+function extractERA(x::Vector{typeof(1.0°)},y::Vector{typeof(1.0°)},
+    year::Vector{Int64}, month::DataValues.DataValueArray{Int64,1},
+    array::AbstractArray)
+    map(x * °, y * °, year, month) do lat, lon, yr, mn
+        if year < 1990 || year > 1999
+            return
+        else if isnull(mn)
+            timedim = yr - 1990
+            step1 = step(axes(array, 1).val)
+            step2 = step(axes(array, 2).val)
+
+
+
+end
