@@ -1,3 +1,6 @@
+############### TEST DATA FROM ERA INTERIM - TEMPERATURE AT 2M #################
+############# LOADED AND VALUES EXTRACTED FOR SUBSET OF GBIF DATA ##############
+
 using NetCDF
 using Unitful
 using Unitful.DefaultSymbols
@@ -65,7 +68,7 @@ x = select(coords, :decimallongitude); y = select(coords, :decimallatitude)
 years = select(sol, :year)
 vals = extractvalues(x * °, y * °, years, tempax, 1990)
 
-# Try plotting values for subset of species
+# Try plotting histograms of values for subset of species
 spp_names = ["Solanum dulcamara", "Solanum nigrum", "Solanum americanum",
 "Solanum parvifolium"]
 for i in spp_names
@@ -77,6 +80,7 @@ res = res[!isnan.(res)]
 using RCall
 @rput res
 @rput i
+# Plot in R
 R"library(ggplot2);library(cowplot);library(gridExtra)
 q = qplot(as.vector(res), geom='histogram',
             xlab ='Average temperature (deg C)')
@@ -85,10 +89,14 @@ print(q)
 dev.off()
 "
 end
-# Compare directly with worldclim
+
+### COMPARE DIRECTLY WITH WORLDCLIM ###
 dir = "/Users/claireh/Documents/PhD/Data/Worldclim/wc2.0_5m/wc2.0_5m_tavg"
+# Extract worldclim data for average temperature
 tavg = extractworldclim(dir)
 vals = extractvalues(x * °, y * °, tavg, 1month:1month:12month)
+
+# Run through same species and plot histograms
 for i in spp_names
 spp = filter(p-> p[:species] == i, sol)
 ids = select(spp, :id)
