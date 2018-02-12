@@ -1,3 +1,5 @@
+#### SOLANUM EXAMPLES WITH WORLDCLIM DATA ####
+
 using Unitful
 using AxisArrays
 using ClimatePref
@@ -8,6 +10,9 @@ import ArchGDAL
 import Base.read
 const AG = ArchGDAL
 
+## Import data
+# Commented out code only needed for first time data is loaded in.
+# After that, can be loaded quickly as Dagger array.
 using JuliaDB
 #sol = loadtable("/Users/claireh/Documents/PhD/Data/GBIF/Solanum",
 #       indexcols = [:phylum, :class, :order, :family, :genus, :species, :scientificname],
@@ -24,8 +29,11 @@ using JuliaDB
 #save(gbif, "/Users/claireh/Documents/PhD/Data/GBIF/Solanum/output")
 sol = load("/Users/claireh/Documents/PhD/Data/GBIF/Solanum/output")
 
+# Select coordinates from solanum data
 coords = select(sol, (:decimallatitude, :decimallongitude))
 
+# Import climate data from worldclim folders
+# One for each parameter
 dir = "/Users/claireh/Documents/PhD/Data/Worldclim/wc2.0_5m"
 tavg = extractworldclim(joinpath(dir, "wc2.0_5m_tavg"))
 tmax = extractworldclim(joinpath(dir, "wc2.0_5m_tmax"))
@@ -34,6 +42,8 @@ srad = extractworldclim(joinpath(dir, "wc2.0_5m_srad"))
 vapr = extractworldclim(joinpath(dir, "wc2.0_5m_vapr"))
 wind = extractworldclim(joinpath(dir, "wc2.0_5m_wind"))
 bio = extractbioclim(joinpath(dir, "wc2.0_5m_bio"))
+
+# Extract values from each of the rasters at solanum locations
 x = select(coords, :decimallongitude); y = select(coords, :decimallatitude)
 vals_tavg = extractvalues(x * °, y * °, tavg, 1month:1month:12month)
 vals_tmax = extractvalues(x * °, y * °, tmax, 1month:1month:12month)
@@ -54,6 +64,7 @@ end
 
 ## Run through 4 tester species and plot histograms of 6 worldclim
 ## variables for each
+
 spp_names = ["Solanum dulcamara", "Solanum nigrum", "Solanum americanum",
 "Solanum parvifolium"]
 for i in spp_names
@@ -93,16 +104,17 @@ for i in spp_names
     "
 end
 
+# Plot average temperature for each month of the year
 using RCall
 tav = ustrip(tavg.array)
 @rput tav
 R"library(fields);
 for (i in 1:12){
-    #jpeg(paste('plots/tavg', i, '.jpeg',sep=''), height= 595, width=842)
+    jpeg(paste('plots/tavg', i, '.jpeg',sep=''), height= 595, width=842)
     image.plot(tav[,,i])
-    #dev.off()
+    dev.off()
     }"
-
+# Plot example of worldclim data with some GBIF occurrence points
 pts = [x[1:4],y[1:4]]
 thisstep = ustrip(step(axes(tavg.array, 1).val))
 @rput pts; @rput thisstep
