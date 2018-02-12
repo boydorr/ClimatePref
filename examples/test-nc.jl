@@ -47,4 +47,29 @@ image.plot(lon, lat, tempsC[,,1], xlab='', ylab='')
 plot(world, add = T)
 dev.off()"
 
+file = "data/World.tif"
+world = extractfile(file)
+wrld = ustrip.(world)
+@rput wrld
+R"image(wrld)"
+
+mask = isnan.(world)
+tempsC[find(mask)] = NaN
+@rput tempsC
+@rput lat; @rput lon
+R"pdf(file='plots/testERAint_mask.pdf', paper = 'a4r', height= 8.27, width=11.69 )
+library(rgdal)
+library(fields)
+world = readOGR('data/ne_10m_land/ne_10m_land.shp', layer='ne_10m_land')
+image.plot(lon, lat, tempsC[,,1], xlab='', ylab='')
+plot(world, add = T)
 dev.off()"
+
+using JuliaDB
+sol = load("/Users/claireh/Documents/PhD/Data/GBIF/Solanum/output")
+coords = select(sol, (:decimallatitude, :decimallongitude))
+x = select(coords, :decimallongitude); y = select(coords, :decimallatitude)
+yr = select(sol, :year); mn = select(sol, :month)
+vals = map(x * °, y * °, year) do x, y, yr
+    extractvalues(x, y, tempax, yr)
+end
