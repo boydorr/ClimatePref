@@ -61,7 +61,40 @@ end
 Function to search a directory `path` using a given `key` string.
 """
 searchdir(path,key) = filter(x->contains(x,key), readdir(path))
+"""
+    extractfile(dir::String)
 
+Function to import a selected file from a path string.
+"""
+function extractfile(dir::String)
+    txy = [Float64, Int64(1), Int64(1)]
+
+    read(file) do dataset
+        #txy[1] = AG.getdatatype(AG.getband(dataset, 1))
+        txy[2] = AG.width(AG.getband(dataset, 1))
+        txy[3] = AG.height(AG.getband(dataset, 1))
+        print(dataset)
+    end
+
+    a = Array{txy[1], 2}(txy[2], txy[3])
+    read(file) do dataset
+        bd = AG.getband(dataset, 1);
+        AG.read!(bd, a);
+    end;
+    lat, long = size(a, 1), size(a, 2);
+    step1 = 360.0° / lat;
+    step2 = 180.0° / long;
+
+    world = AxisArray(a[:, long:-1:1],
+                           Axis{:latitude}(-180.0°:step1:(180.0° - step1 / 2)),
+                           Axis{:longitude}(-90.0°:step2:(90.0°-step2/2)));
+
+    if txy[1] <: AbstractFloat
+        world[world .== world[Axis{:latitude}(0°),
+                                             Axis{:longitude}(step2/2)]] *= NaN;
+    end;
+    world
+end
 """
     extractfolder(dir::String)
 
