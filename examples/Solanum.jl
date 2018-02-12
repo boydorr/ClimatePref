@@ -26,11 +26,22 @@ sol = load("/Users/claireh/Documents/PhD/Data/GBIF/Solanum/output")
 
 coords = select(sol, (:decimallatitude, :decimallongitude))
 
-dir = "/Users/claireh/Documents/PhD/Data/Worldclim/wc2.0_5m/"
-folders = searchdir(dir, "wc2.0_5m")
-datasets = extractfolders(dir, folders)
+dir = "/Users/claireh/Documents/PhD/Data/Worldclim/wc2.0_5m"
+tavg = extractworldclim(joinpath(dir, "wc2.0_5m_tavg"))
+tmax = extractworldclim(joinpath(dir, "wc2.0_5m_tmax"))
+prec = extractworldclim(joinpath(dir, "wc2.0_5m_prec"))
+srad = extractworldclim(joinpath(dir, "wc2.0_5m_srad"))
+vapr = extractworldclim(joinpath(dir, "wc2.0_5m_vapr"))
+wind = extractworldclim(joinpath(dir, "wc2.0_5m_wind"))
+bio = extractbioclim(joinpath(dir, "wc2.0_5m_bio"))
 x = select(coords, :decimallongitude); y = select(coords, :decimallatitude)
-vals = extractvalues(x * °, y * °, datasets)
+vals_tavg = extractvalues(x * °, y * °, tavg, 1month:1month:12month)
+vals_tmax = extractvalues(x * °, y * °, tmax, 1month:1month:12month)
+vals_prec = extractvalues(x * °, y * °, prec, 1month:1month:12month)
+vals_srad = extractvalues(x * °, y * °, srad, 1month:1month:12month)
+vals_vapr = extractvalues(x * °, y * °, vapr, 1month:1month:12month)
+vals_wind = extractvalues(x * °, y * °, wind, 1month:1month:12month)
+vals_bio = extractvalues(x * °, y * °, bio, 1:1:19)
 
 na_mean(x) = mean(x[.!isnan.(x)])
 na_max(x) = maximum(x[.!isnan.(x)])
