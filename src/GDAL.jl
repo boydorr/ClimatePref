@@ -185,7 +185,7 @@ function extractbioclim(dir::String)
     if txy[1] <: AbstractFloat
         world[world .== world[Axis{:latitude}(0°),
                                              Axis{:longitude}(0°),
-                                             thirdaxis(thirdaxis[1])]] *= NaN;
+                                             Axis{:var}(1)]] *= NaN;
     end;
     Bioclim(world)
 end
@@ -287,7 +287,7 @@ function extractvalues(x::Vector{typeof(1.0°)},y::Vector{typeof(1.0°)},
    all(y .< 90.0) && all(y .> -90.0) ||
    error("Y coordinate is out of bounds")
    thisstep = axes(bc.array, 1).val[2] - axes(bc.array, 1).val[1]
-   res = map((i, j) -> array[(i - thisstep/2)..(i + thisstep/2),
+   res = map((i, j) -> bc.array[(i - thisstep/2)..(i + thisstep/2),
                               (j - thisstep/2)..(j + thisstep/2),
                               val], x, y)
    return transpose(hcat(res...))
@@ -300,7 +300,7 @@ function extractvalues(x::Vector{typeof(1.0°)},y::Vector{typeof(1.0°)},
    all(y .< 90.0) && all(y .> -90.0) ||
    error("Y coordinate is out of bounds")
    thisstep = axes(bc.array, 1).val[2] - axes(bc.array, 1).val[1]
-   res = map((i, j) -> array[(i - thisstep/2)..(i + thisstep/2),
+   res = map((i, j) -> bc.array[(i - thisstep/2)..(i + thisstep/2),
                               (j - thisstep/2)..(j + thisstep/2),
                               start(vals)..last(vals)][1,1,:], x, y)
    return transpose(hcat(res...))
