@@ -28,3 +28,7 @@ mutable struct ERA <: AbstractClimate
         new(array)
     end
 end
+
+mutable struct Reference <: AbstractClimate
+    array::AxisArray
+end

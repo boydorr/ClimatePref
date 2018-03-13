@@ -35,6 +35,7 @@ using Unitful
 using Unitful.DefaultSymbols
 using myunitful
 using AxisArrays
+using NetCDF
 
 import Unitful: °, °C, mm
 import ArchGDAL
@@ -223,6 +224,8 @@ function extractERA(dir::String, param::String, dim::Vector{T}) where T<: Unitfu
                         Axis{:time}(collect(dim)))
     ERA(world)
 end
+function catERA()
+end
 
 
 """
@@ -313,7 +316,7 @@ Function to extract values from an ERA object, at specified x, y locations and
 years. Must be given a starting year of the dataset.
 """
 function extractvalues(x::Vector{typeof(1.0°)},y::Vector{typeof(1.0°)},
-    years::Vector{Int64}, era::ERA, start::Int64)
+    years::Vector{Int64}, era::ERA, startyr::Int64, endyr::Int64)
     all(x .<= 180.0°) && all(x .>= -180.0°) ||
     error("X coordinate is out of bounds")
     all(y .< 90.0°) && all(y .> -90.0°) ||
@@ -321,13 +324,27 @@ function extractvalues(x::Vector{typeof(1.0°)},y::Vector{typeof(1.0°)},
     thisstep1 = axes(era.array, 1).val[2] - axes(era.array, 1).val[1]
     thisstep2 = axes(era.array, 2).val[2] - axes(era.array, 2).val[1]
     map(x , y, years) do lat, lon, yr
-        if yr < 1990 || yr > 1999
+        if yr < startyr || yr > endyr
             return repmat([NaN], 12)
         else
-            time = (yr - start) * 1year
+            time = (yr - startyr) * 1year
             return Array(era.array[(lat - thisstep1/2)..(lat + thisstep1/2),
                   (lon - thisstep2/2)..(lon + thisstep2/2),
                   time .. (time + 11month)][1,1,:])
         end
+    end
+end
+
+function extractvalues(x::Vector{typeof(1.0°)},y::Vector{typeof(1.0°)},
+    ref::Reference)
+    all(x .<= 180.0°) && all(x .>= -180.0°) ||
+    error("X coordinate is out of bounds")
+    all(y .< 90.0°) && all(y .> -90.0°) ||
+    error("Y coordinate is out of bounds")
+    thisstep1 = step(axes(ref.array, 1).val)
+    thisstep2 = step(axes(ref.array, 2).val)
+    map(x , y) do lon, lat
+        return ref.array[(lon - thisstep1/2)..(lon + thisstep1/2),
+              (lat - thisstep2/2)..(lat + thisstep2/2)][1,1]
     end
 end
