@@ -28,7 +28,7 @@ using JuliaDB
 #                       :recordnumber=>String))
 #save(gbif, "/Users/claireh/Documents/PhD/Data/GBIF/Solanum/output")
 sol = load("/Users/claireh/Documents/PhD/Data/GBIF/Solanum/output")
-
+sol = pushcol(sol, :id, collect(1:215440))
 # Select coordinates from solanum data
 coords = select(sol, (:decimallatitude, :decimallongitude))
 
@@ -57,7 +57,7 @@ na_mean(x) = mean(x[.!isnan.(x)])
 na_max(x) = maximum(x[.!isnan.(x)])
 na_min(x) = minimum(x[.!isnan.(x)])
 na_var(x) = var(x[.!isnan.(x)])
-sol = pushcol(sol, :id, collect(1:215440))
+
 names = map(searchdir(dir, "wc2.0_5m_")) do str
     Symbol(split(str, "wc2.0_5m_")[2])
 end
@@ -125,3 +125,28 @@ seq(-90, 90, by=thisstep), tavg[,,1], xlab='', ylab='')
 points(pts[[1]], pts[[2]], pch=20)
 #dev.off()
 "
+
+using StatPlots
+using StatsBase
+
+temps = collect(-67:1:44)
+tavg_tab = table(temps[2:end], names=[:temps])
+for i in spp_names
+    # Select species and the id of the rows
+    spp = filter(p-> p[:species] == i, sol)
+    ids = select(spp, :id)
+    # Select values for row ids from each variable
+    res_tavg = ustrip(vals_tavg[ids])
+    hist = fit(Histogram, res_tavg, temps)
+    tavg_tab = pushcol(tavg_tab, Symbol(i), hist.weights)
+end
+plotlyjs()
+anim = @animate for i in spp_names
+    spp = filter(p-> p[:species] == i, sol)
+    ids = select(spp, :id)
+    # Select values for row ids from each variable
+    res_tavg = ustrip(vals_tavg[ids])
+    hist = fit(Histogram, res_tavg, temps)
+    plot(hist)
+end
+gif(anim, "plots/test_gif.gif", fps=10)
