@@ -6,6 +6,9 @@ using Unitful
 using Unitful.DefaultSymbols
 using AxisArrays
 using myunitful
+using ClimatePref
+using RCall
+using JuliaDB
 
 # Load example dataset downloaded from EMCWF
 ncinfo("/Users/claireh/Downloads/test.nc")
@@ -18,8 +21,16 @@ test = extractERA("/Users/claireh/Downloads/test.nc", "t2m",
 # Basic info about data
 ncinfo("data/era_interim_moda_1990")
 # Extract data for t2m parameter - temperature at 2m
-dir = "data/era_interim_moda_1990"
-tempax = extractERA(dir, "t2m", collect(1.0month:1month:10year))
+dir1 = "data/era_interim_moda_1980"
+tempax1 = extractERA(dir1, "t2m", collect(1.0month:1month:10year))
+dir2 = "data/era_interim_moda_1990"
+tempax2 = extractERA(dir2, "t2m", collect(121month:1month:20year))
+dir3 = "data/era_interim_moda_2000"
+tempax3 = extractERA(dir3, "t2m", collect(241month:1month:30year))
+dir4 = "data/era_interim_moda_2010"
+tempax4 = extractERA(dir4, "t2m", collect(361month:1month:38year))
+
+tempax = ERA(cat(3, tempax1.array, tempax2.array, tempax3.array, tempax4.array))
 
 # Collect lats and lons from array
 lon = ustrip(axes(tempax.array, 1).val)
@@ -60,34 +71,35 @@ dev.off()"
 
 
 # Load GBIF data in order to extract t2m values from GPS locations
-using JuliaDB
+
 sol = load("/Users/claireh/Documents/PhD/Data/GBIF/Solanum/output")
 sol = pushcol(sol, :id, collect(1:215440))
 coords = select(sol, (:decimallatitude, :decimallongitude))
 x = select(coords, :decimallongitude); y = select(coords, :decimallatitude)
 years = select(sol, :year)
-vals = extractvalues(x * °, y * °, years, tempax, 1990)
+vals = extractvalues(x * °, y * °, years, tempax, 1980, 2000)
 
 # Try plotting histograms of values for subset of species
 spp_names = ["Solanum dulcamara", "Solanum nigrum", "Solanum americanum",
 "Solanum parvifolium"]
 for i in spp_names
-spp = filter(p-> p[:species] == i, sol)
-ids = select(spp, :id)
-subvals = ustrip.(vals[ids])
-res = vcat(subvals...)
-res = res[!isnan.(res)]
-using RCall
-@rput res
-@rput i
-# Plot in R
-R"library(ggplot2);library(cowplot);library(gridExtra)
-q = qplot(as.vector(res), geom='histogram',
-            xlab ='Average temperature (deg C)')
-pdf(file=paste('plots/era_',i,'.pdf', sep=''), paper = 'a4r', height= 8.27, width=11.69 )
-print(q)
-dev.off()
-"
+    spp = filter(p-> p[:species] == i, sol)
+    ids = select(spp, :id)
+    subvals = ustrip.(vals[ids])
+    res = vcat(subvals...)
+    res = res[!isnan.(res)]
+
+    @rput res
+    @rput i
+    # Plot in R
+    R"library(ggplot2);library(cowplot);library(gridExtra)
+    q = qplot(as.vector(res), geom='histogram',
+                xlab ='Average temperature (deg C)')+
+                stat_bin(breaks=seq(-20, 35, by=2.5))
+    pdf(file=paste('plots/era_',i,'.pdf', sep=''), paper = 'a4r', height= 8.27, width=11.69 )
+    print(q)
+    dev.off()
+    "
 end
 
 ### COMPARE DIRECTLY WITH WORLDCLIM ###
@@ -98,19 +110,20 @@ vals = extractvalues(x * °, y * °, tavg, 1month:1month:12month)
 
 # Run through same species and plot histograms
 for i in spp_names
-spp = filter(p-> p[:species] == i, sol)
-ids = select(spp, :id)
-subvals = ustrip.(vals[ids, :])
-res = vcat(subvals...)
-res = res[!isnan.(res)]
-using RCall
-@rput res
-@rput i
-R"library(ggplot2);library(cowplot);library(gridExtra)
-q = qplot(as.vector(res), geom='histogram',
-            xlab ='Average temperature (deg C)')
-pdf(file=paste('plots/worldclim_',i,'.pdf', sep=''), paper = 'a4r', height= 8.27, width=11.69 )
-print(q)
-dev.off()
-"
+    spp = filter(p-> p[:species] == i, sol)
+    ids = select(spp, :id)
+    subvals = ustrip.(vals[ids, :])
+    res = vcat(subvals...)
+    res = res[!isnan.(res)]
+
+    @rput res
+    @rput i
+    R"library(ggplot2);library(cowplot);library(gridExtra)
+    q = qplot(as.vector(res), geom='histogram',
+                xlab ='Average temperature (deg C)')+
+                stat_bin(breaks=seq(-20, 35, by=2.5))
+    pdf(file=paste('plots/worldclim_',i,'.pdf', sep=''), paper = 'a4r', height= 8.27, width=11.69 )
+    print(q)
+    dev.off()
+    "
 end
