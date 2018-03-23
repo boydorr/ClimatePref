@@ -31,6 +31,8 @@ coords_sol = hcat(select(sol, :decimallatitude), select(sol, :decimallongitude))
 sol = pushcol(sol, :refval, extractvalues(coords_sol[:, 2] * °, coords_sol[:, 1] * °, ref))
 # Use anti-join to filter out those that have the same reference value
 sol = join(sol, gardens, how=:anti, lkey=:refval, rkey =:refval)
+sol = popcol(sol, :refval)
+save(sol, "data/Clean_data")
 
 function gardenmask!(occ::JuliaDB.Table, gard::JuliaDB.Table, masksize::Float64)
     coords = hcat(select(gard, :Latitude), select(gard, :Longitude))
