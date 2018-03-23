@@ -339,7 +339,7 @@ function extractvalues(x::Vector{typeof(1.0°)},y::Vector{typeof(1.0°)},
     ref::Reference)
     all(x .<= 180.0°) && all(x .>= -180.0°) ||
     error("X coordinate is out of bounds")
-    all(y .< 90.0°) && all(y .> -90.0°) ||
+    all(y .<= 90.0°) && all(y .>= -90.0°) ||
     error("Y coordinate is out of bounds")
     thisstep1 = step(axes(ref.array, 1).val)
     thisstep2 = step(axes(ref.array, 2).val)
