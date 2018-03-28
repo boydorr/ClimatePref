@@ -1,6 +1,7 @@
 using JuliaDB
 using Phylo
 using Compat
+using ClimatePref
 
 
 IndexedTables.NextTable() = table([])
@@ -97,46 +98,6 @@ se = sqrt.(diag(inv(H)))
 opt1 = inv(transpose(O) * inv(V) * O) * (transpose(O) * inv(V) * traits)
 opt2 = transpose(traits - opt1 * O) * inv(V) * (traits - opt1 * O)/n
 
-# Start value ~ 0.5, and rate of evolution around 60!
-mutable struct Brownian
-    optimum::AbstractArray
-    se::AbstractArray
-    H::AbstractMatrix
-    LL::Float64
-end
-import Base.show
-function show(io::IO, m::Brownian)
-roundedopts = round.(m.optimum, 2)
-roundedses = round.(m.se, 2)
-roundedLL = round(m.LL, 2)
-return print(io, "σ² = $(roundedopts[1]) ($(roundedopts[1] - 2*roundedses[1]) - $(roundedopts[1] + 2*roundedses[1]))", "\n",
-"z̄₀ = $(roundedopts[2]) ($(roundedopts[2] - 2*roundedses[2]) - $(roundedopts[2] + 2*roundedses[2]))","\n",
-"log-likelihood = $roundedLL")
-end
-
-
-function fitBrownian(tree::AbstractTree, traits::Vector{F} where F <: AbstractFloat)
-    tips= collect(nodenamefilter(isleaf, tree))
-    n = length(tips)
-    V = varcovar(tree)
-    O = ones(n)
-    LL(x) = 1/2 * (n * log(2π) + log(abs(det(x[1] * V))) +
-    transpose(traits - x[2] * O) * inv(x[1] * V) * (traits - x[2] * O))
-    result = optimize(LL, [0.1, 0.1])
-    opts = Optim.minimizer(result)
-    H = Calculus.hessian(LL, opts)
-    se = sqrt.(diag(abs.(inv(H))))
-    logL = -LL(opts)
-    return Brownian(opts, se, H, logL)
-end
-
-tips= collect(nodenamefilter(isleaf, t))
-n = length(tips)
-O = ones(n)
-V = varcovar(t)
-opt1 = inv(transpose(O) * inv(V) * O) * (transpose(O) * inv(V) * ustrip.(soltraits))
-opt2 = transpose(ustrip.(soltraits) - opt1 * O) * inv(V) * (ustrip.(soltraits) - opt1 * O)/n
-
 
 res = fitBrownian(tree, traits)
 
@@ -145,43 +106,6 @@ na_mean(x) = mean(x[.!isnan.(x)])
 
 soltraits = map(x -> na_mean(select(getnoderecord(t, x), :tavg)), cross_species_names)
 res = fitBrownian(t, ustrip.(soltraits))
-
-mutable struct Lambda
-    optimum::AbstractArray
-    se::AbstractArray
-    H::AbstractMatrix
-    LL::Float64
-end
-import Base.show
-function show(io::IO, m::Lambda)
-roundedopts = round.(m.optimum, 2)
-roundedses = round.(m.se, 2)
-roundedLL = round(m.LL, 2)
-return print(io, "σ² = $(roundedopts[1]) ($(roundedopts[1] - 2*roundedses[1]) - $(roundedopts[1] + 2*roundedses[1]))", "\n",
-"z̄₀ = $(roundedopts[2]) ($(roundedopts[2] - 2*roundedses[2]) - $(roundedopts[2] + 2*roundedses[2]))", "\n",
-"λ = $(roundedopts[3]) ($(roundedopts[3] - 2*roundedses[3]) - $(roundedopts[3] + 2*roundedses[3]))","\n",
-"log-likelihood = $roundedLL")
-end
-function fitLambda(tree::AbstractTree, traits::Vector{F} where F <: AbstractFloat)
-    tips= collect(nodenamefilter(isleaf, tree))
-    n = length(tips)
-    V = varcovar(tree)
-    function LL(x, n, V, traits)
-        O = ones(n)
-        dV = diagm(diag(V))
-        V = (x[3] * (V - dV) + dV)
-        return 1/2 * (n * log(2π) + log(abs(det(x[1] * V))) +
-        transpose(traits - x[2] * O) * inv(x[1] * V) * (traits - x[2] * O))
-    end
-    result = optimize(x -> LL(x, n, V, traits), [0.1, 0.1, 0.2],
-    [exp(-100), -Inf, 0.0],
-    [Inf, Inf, 1.0])
-    opts = Optim.minimizer(result)
-    H = Calculus.hessian(x -> LL(x, n, V, traits), opts)
-    se = sqrt.(diag(abs.(inv(H))))
-    logL = -LL(opts, n, V, traits)
-    return Lambda(opts, se, H, logL)
-end
 
 fitLambda(tree, traits)
 
