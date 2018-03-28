@@ -182,3 +182,7 @@ function fitLambda(tree::AbstractTree, traits::Vector{F} where F <: AbstractFloa
     logL = -LL(opts, n, V, traits)
     return Lambda(opts, se, H, logL)
 end
+
+fitLambda(tree, traits)
+
+fitLambda(t, ustrip.(soltraits))
