@@ -96,3 +96,36 @@ se = sqrt.(diag(inv(H)))
 
 opt1 = inv(transpose(O) * inv(V) * O) * (transpose(O) * inv(V) * traits)
 opt2 = transpose(traits - opt1 * O) * inv(V) * (traits - opt1 * O)/n
+
+# Start value ~ 0.5, and rate of evolution around 60!
+mutable struct Brownian
+    optimum::AbstractArray
+    se::AbstractArray
+    H::AbstractMatrix
+    LL::Float64
+end
+import Base.show
+function show(io::IO, m::Brownian)
+roundedopts = round.(m.optimum, 2)
+roundedses = round.(m.se, 2)
+roundedLL = round(m.LL, 2)
+return print(io, "σ² = $(roundedopts[1]) ($(roundedopts[1] - 2*roundedses[1]) - $(roundedopts[1] + 2*roundedses[1]))", "\n",
+"z̄₀ = $(roundedopts[2]) ($(roundedopts[2] - 2*roundedses[2]) - $(roundedopts[2] + 2*roundedses[2]))","\n",
+"log-likelihood = $roundedLL")
+end
+
+
+function fitBrownian(tree::AbstractTree, traits::Vector{F} where F <: AbstractFloat)
+    tips= collect(nodenamefilter(isleaf, tree))
+    n = length(tips)
+    V = varcovar(tree)
+    O = ones(n)
+    LL(x) = 1/2 * (n * log(2π) + log(abs(det(x[1] * V))) +
+    transpose(traits - x[2] * O) * inv(x[1] * V) * (traits - x[2] * O))
+    result = optimize(LL, [0.1, 0.1])
+    opts = Optim.minimizer(result)
+    H = Calculus.hessian(LL, opts)
+    se = sqrt.(diag(abs.(inv(H))))
+    logL = -LL(opts)
+    return Brownian(opts, se, H, logL)
+end
