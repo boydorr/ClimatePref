@@ -186,3 +186,46 @@ end
 fitLambda(tree, traits)
 
 fitLambda(t, ustrip.(soltraits))
+
+# Test against R code
+include(joinpath(Pkg.dir("Phylo"), "src", "rcall.jl"));
+R"library(ape)"
+rt = rcall(:rtree, 10)
+jt = NamedTree(rt)
+traits = rand(Normal(0, 5), 10)
+fitBrownian(jt, traits)
+@rput jt; @rput traits
+R"library(geiger)
+names(traits) = jt$tip.label
+fitContinuous(jt, traits, model='BM', control = list(method ='Nelder-Mead'))"
+
+fitLambda(jt, traits)
+    R"library(geiger)
+    names(traits) = jt$tip.label
+    fitContinuous(jt, traits, model='lambda', , control = list(method ='Nelder-Mead'))"
+# Test real tree against R code
+sol_traits = ustrip.(soltraits)
+@rput cross_species_names; @rput sol_traits
+R" library(ape)
+    tree = read.tree('./data/Qian2016.tree')
+    names_tree = tree$tip.label
+    keep_tips = match(cross_species_names, names_tree)
+    drop_tips = names_tree[-keep_tips]
+    names(sol_traits) = cross_species_names
+    newtree = drop.tip(tree, drop_tips, trim.internal = T)
+    fitContinuous(newtree, sol_traits, model = 'BM')
+"
+@rget newtree
+fitBrownian(newtree, sol_traits)
+
+    R" library(ape)
+        tree = read.tree('./data/Qian2016.tree')
+        names_tree = tree$tip.label
+        keep_tips = match(cross_species_names, names_tree)
+        drop_tips = names_tree[-keep_tips]
+        names(sol_traits) = cross_species_names
+        newtree = drop.tip(tree, drop_tips, trim.internal = T)
+        fitContinuous(newtree, sol_traits, model = 'lambda')
+    "
+@rget newtree
+fitLambda(newtree, sol_traits)
