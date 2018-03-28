@@ -129,3 +129,19 @@ function fitBrownian(tree::AbstractTree, traits::Vector{F} where F <: AbstractFl
     logL = -LL(opts)
     return Brownian(opts, se, H, logL)
 end
+
+tips= collect(nodenamefilter(isleaf, t))
+n = length(tips)
+O = ones(n)
+V = varcovar(t)
+opt1 = inv(transpose(O) * inv(V) * O) * (transpose(O) * inv(V) * ustrip.(soltraits))
+opt2 = transpose(ustrip.(soltraits) - opt1 * O) * inv(V) * (ustrip.(soltraits) - opt1 * O)/n
+
+
+res = fitBrownian(tree, traits)
+
+na_mean(x) = mean(x[.!isnan.(x)])
+# Fit to real tree
+
+soltraits = map(x -> na_mean(select(getnoderecord(t, x), :tavg)), cross_species_names)
+res = fitBrownian(t, ustrip.(soltraits))
