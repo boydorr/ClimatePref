@@ -51,3 +51,48 @@ map(cross_species, cross_species_names) do spp_name, tree_name
     setnoderecord!(t, tree_name, clean_dat)
 end
 
+# Inference step
+using Optim
+using Distributions
+
+# Create fake tree
+n = 10
+dist = Ultrametric{PolytomousTree{LeafInfo, Vector{Float64}}}(n)
+tree = rand(dist)
+
+function varcovar(tree::AbstractTree)
+    tips = collect(nodenamefilter(isleaf, tree))
+    root = collect(nodenamefilter(isroot, tree))[1]
+    V = zeros(Float64, length(tips), length(tips))
+    for i in 1:(length(tips) - 1)
+        for j in i+1:length(tips)
+            V[i, i] =  distance(tree, root, tips[i])
+            V[j, j]= V[i,i]
+            inter = getancestors(tree, tips[i]) ∩ getancestors(tree, tips[j])
+            common = indmax(map(x-> distance(tree, root, x), inter))
+            V[i, j] = distance(tree, root, inter[common])
+            V[j, i] = V[i, j]
+        end
+    end
+    return V
+end
+
+V = varcovar(tree)
+traits = rand(Normal(0, 5), n)
+#tips = collect(nodenamefilter(isleaf, tree))
+#for i in eachindex(traits)
+#    setnoderecord!(tree, tips[i], [traits[i]])
+#end
+O = ones(n)
+
+LL(x) = 1/2 * (n * log(2π) + log(abs(det(x[1] * V))) +
+transpose(traits - x[2] * O) * inv(x[1] * V) * (traits - x[2] * O))
+
+result = optimize(LL, [0.1, 0.1])
+opts = Optim.minimizer(result)
+H = ForwardDiff.hessian(LL, opts)
+se = sqrt.(diag(inv(H)))
+
+
+opt1 = inv(transpose(O) * inv(V) * O) * (transpose(O) * inv(V) * traits)
+opt2 = transpose(traits - opt1 * O) * inv(V) * (traits - opt1 * O)/n
