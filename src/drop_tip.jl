@@ -1,3 +1,7 @@
+function getinternalnodes(t::AbstractTree)
+    return collect(nodenamefilter(x->!isleaf(x)& !isroot(x), t))
+end
+
 function drop_tip!(t::AbstractTree, tip::Vector{String})
     tree_names = getleafnames(t)
     cut_names = setdiff(tree_names, tip)
@@ -8,9 +12,17 @@ function drop_tip!(t::AbstractTree, tip::Vector{String})
         nodes = setdiff(collect(nodenamefilter(isleaf, t)), tip)
         map(x -> deletenode!(t, x), nodes)
     end
-end
+    while sum(map(x-> length(getchildren(t, x)).< 2, getinternalnodes(t))) > 0
+        inner_nodes = getinternalnodes(t)
+        remove_nodes = find(map(x-> length(getchildren(t, x)).< 2, inner_nodes))
+        for i in remove_nodes
+            parent = getparent(t, inner_nodes[i])
+            parentbranch = getinbound(getnode(t, inner_nodes[i]))
 
+            child = getchildren(t, inner_nodes[i])[1]
+            childbranch = getoutbounds(getnode(t, inner_nodes[i]))[1]
 
+            len = distance(t, parent, child)
 
 function drop_tip(t::AbstractTree, tip::Vector{String}, trim.internal = TRUE, subtree = FALSE, root.edge = 0,
     rooted = is.rooted(phy), collapse.singles = TRUE, interactive = FALSE)
