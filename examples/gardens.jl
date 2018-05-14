@@ -13,7 +13,7 @@ gardens = loadtable("/Users/claireh/Documents/PhD/Data/GBIF/garden",
                     :country_name=>String,
                     :InstitutionType=>String))
 coords = hcat(select(gardens, :Latitude), select(gardens, :Longitude))
-
+save(gardens, "data/garden_table")
 # Create reference array
 gridsize = 0.02°
 refarray = AxisArray(Array{Int64, 2}(18001, 9001), Axis{:longitude}(-180.0°:gridsize:180.0°),
