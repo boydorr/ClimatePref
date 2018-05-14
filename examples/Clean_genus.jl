@@ -67,7 +67,7 @@ names = fieldnames(eltype(sol))
 dir = "/Users/claireh/Documents/PhD/Data/GBIF/final/"
 genera = searchdir(dir, ".csv")
 
-@sync @parallel for i in genera[514:end]
+@sync @parallel for i in genera[1:end]
     genus = loadtable(string(dir, i),
         indexcols = [:phylum, :class, :order, :family, :genus, :species, :scientificname],
         colparsers=Dict(zip(names,types)), distributed=false)
