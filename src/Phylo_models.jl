@@ -1,15 +1,15 @@
 using Phylo
+using ClimatePref
 using Optim
 using Calculus
 
 import Base.show
-
 function varcovar(tree::AbstractTree)
     tips = collect(nodenamefilter(isleaf, tree))
     root = collect(nodenamefilter(isroot, tree))[1]
     V = zeros(Float64, length(tips), length(tips))
     for i in 1:(length(tips) - 1)
-        for j in i+1:length(tips)
+        for j in (i+1):length(tips)
             V[i, i] =  distance(tree, root, tips[i])
             V[j, j]= V[i,i]
             inter = getancestors(tree, tips[i]) ∩ getancestors(tree, tips[j])
