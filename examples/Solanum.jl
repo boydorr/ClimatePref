@@ -37,6 +37,7 @@ coords = select(sol, (:decimallatitude, :decimallongitude))
 dir = "/Users/claireh/Documents/PhD/Data/Worldclim/wc2.0_5m"
 tavg = extractworldclim(joinpath(dir, "wc2.0_5m_tavg"))
 tmax = extractworldclim(joinpath(dir, "wc2.0_5m_tmax"))
+tmin = extractworldclim(joinpath(dir, "wc2.0_5m_tmin"))
 prec = extractworldclim(joinpath(dir, "wc2.0_5m_prec"))
 srad = extractworldclim(joinpath(dir, "wc2.0_5m_srad"))
 vapr = extractworldclim(joinpath(dir, "wc2.0_5m_vapr"))
