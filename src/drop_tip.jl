@@ -5,13 +5,16 @@ end
 function drop_tip!(t::AbstractTree, tip::Vector{String})
     tree_names = getleafnames(t)
     cut_names = setdiff(tree_names, tip)
-    for i in cut_names[2:end]
+    # Remove nodes that are not in tip names
+    for i in cut_names[1:end]
         deletenode!(t, i)
     end
+    # Remove nodes that are related to the cut tips
     while length(setdiff(collect(nodenamefilter(isleaf, t)), tip)) > 0
         nodes = setdiff(collect(nodenamefilter(isleaf, t)), tip)
         map(x -> deletenode!(t, x), nodes)
     end
+    # Merge internal nodes that no longer have multiple children
     while sum(map(x-> length(getchildren(t, x)).< 2, getinternalnodes(t))) > 0
         inner_nodes = getinternalnodes(t)
         remove_nodes = find(map(x-> length(getchildren(t, x)).< 2, inner_nodes))
