@@ -79,6 +79,16 @@ x = select(coords, :decimallongitude); y = select(coords, :decimallatitude)
 years = select(sol, :year)
 vals = extractvalues(x * °, y * °, years, tempax, 1980, 2000)
 
+@rput x; @rput y
+R"jpeg(file='plots/EAG.jpeg', height= 595, width=842)
+library(rgdal)
+library(fields)
+world = readOGR('data/ne_10m_land/ne_10m_land.shp', layer='ne_10m_land')
+image.plot(lon, lat, tempsC[,,1], xlab='', ylab='')
+points(x, y, pch='.')
+plot(world, add = T)
+dev.off()"
+
 # Try plotting histograms of values for subset of species
 spp_names = ["Solanum dulcamara", "Solanum nigrum", "Solanum americanum",
 "Solanum parvifolium"]
