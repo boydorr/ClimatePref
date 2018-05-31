@@ -1,13 +1,22 @@
-addprocs(24)
+addprocs(8)
 @everywhere using StatsBase
 @everywhere using Unitful
 @everywhere using JuliaDB
+@everywhere using AxisArrays
 using ClimatePref
 using JLD
 @everywhere import Unitful.ustrip
 @everywhere ustrip(x::DataValues.DataValue) = ustrip(x.value)
-
-dir = "../Worldclim/"
+@everywhere function vec2array(v)
+    r = length(v)
+    c = length(v[1])
+    a = Array{Int64}(r,c)
+    for i in 1:r, j in 1:c
+        a[i,j] = v[i][j]
+    end
+    a
+end
+dir = "../Worldclim/Monthly"
 worldclim = map(searchdir(dir, "")) do str
     Symbol(str)
 end
