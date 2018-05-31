@@ -68,5 +68,31 @@ for j in 2:7
     JLD.save(string("Binned_data_monthly_",worldclim[j],".jld"),
      string("Binned_data_monthly_", worldclim[j]), bins)
 end
+
+function detect_anomaly(bins::AxisArray{Int64, 2}, gap::Int64)
+    anomalies = Array{Int64, 1}(0)
+    for i in 1:size(bins, 1)
+        row = bins[i, :]
+        if sum(row) > 0
+        start = minimum(find(row .> 0))[1]
+        ending = length(row) - minimum(find(reverse(row) .> 0))[1] + 1
+        row = row[start:ending]
+        count = 0
+        for j in eachindex(row)
+            if count >= gap
+                push!(anomalies, i)
+                break
+            end
+            if row[j] == 0
+                count = count + 1
+            else
+                count = 0
+            end
+        end
+    end
+end
+    return bins.axes[1].val[anomalies]
+end
+
 end
 JLD.save("Binned_data.jld", "Binned_data", bins)
