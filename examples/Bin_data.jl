@@ -20,17 +20,53 @@ dir = "../Worldclim/Monthly"
 worldclim = map(searchdir(dir, "")) do str
     Symbol(str)
 end
-dir = "final/"
-genera = searchdir(dir, ".csv")
+dir = "Genera/Worldclim/Monthly"
+genera = searchdir(dir, "")
 
 
-bins = SharedArray{Int64, 3}(30, 7, length(genera))
-splits = Dict(zip(worldclim, [collect(0:100:3000), collect(0:2300:70000), collect(-70:4:50),
-    collect(-70:4:50), collect(-80:4:40), collect(0:0.13:4), collect(0:1:30)]))
-@sync @parallel for i in eachindex(genera)
-    genus = load(string("Genera/Worldclim/", split(genera[i], ".csv")[1]))
-    hist = map( x-> fit(Histogram, ustrip.(select(genus, x)), splits[x]).weights,
-        worldclim)
-    bins[:, :, i] = hcat(hist...)
+splits = Dict(zip(worldclim, [collect(0:50:3000), collect(0:500:70000),
+    collect(-70:1:50), collect(-70:1:50), collect(-80:1:40),
+    collect(0:0.1:4), collect(0:0.5:30)]))
+for j in 2:7
+@everywhere func(y) = fit(Histogram, ustrip.(y), splits[worldclim[j]]).weights
+    bins = @sync @parallel (merge) for i in eachindex(genera)
+        genus = JuliaDB.load(string("Genera/Worldclim/", genera[i]))
+        spp = unique(select(genus, :species))
+        spp = spp[spp .!= ""]
+        if length(spp) == 0
+            bin = AxisArray(Array{Int64, 2}(0, 30),
+            Axis{:Species}(spp), Axis{:Bins}(splits[worldclim[j]][2:end]))
+        else
+        res = groupby(:func => func, genus, :species, select=worldclim[j])
+        res = filter(p->p.species != "", res)
+        bin = AxisArray(vec2array(select(res, :func)),
+        Axis{:Species}(collect(select(res, :species))), Axis{:Bins}(splits[worldclim[j]][2:end]))
+    end
+    bin
+    end
+    JLD.save(string("Binned_data_",worldclim[j],".jld"),
+     string("Binned_data_", worldclim[j]), bins)
+end
+j=1
+for j in 2:7
+@everywhere func(y) = fit(Histogram, ustrip.(y), splits[worldclim[j]], closed=:right).weights
+    bins = @sync @parallel (merge) for i in eachindex(genera)
+        genus = JuliaDB.load(string("Genera/Worldclim/Monthly/", genera[i]))
+        spp = unique(select(genus, :species))
+        spp = spp[spp .!= ""]
+        if length(spp) == 0
+            bin = AxisArray(Array{Int64, 2}(0, length(splits[worldclim[j]][2:end])),
+            Axis{:Species}(spp), Axis{:Bins}(splits[worldclim[j]][2:end]))
+        else
+        res = groupby(:func => func, genus, :species, select=worldclim[j])
+        res = filter(p->p.species != "", res)
+        bin = AxisArray(vec2array(select(res, :func)),
+        Axis{:Species}(collect(select(res, :species))), Axis{:Bins}(splits[worldclim[j]][2:end]))
+    end
+    bin
+    end
+    JLD.save(string("Binned_data_monthly_",worldclim[j],".jld"),
+     string("Binned_data_monthly_", worldclim[j]), bins)
+end
 end
 JLD.save("Binned_data.jld", "Binned_data", bins)
