@@ -94,5 +94,25 @@ end
     return bins.axes[1].val[anomalies]
 end
 
+
+R"dat = data.frame(vec=vec, temps=temps)
+library(ggplot2)
+library(cowplot)
+pdf("test.pdf", paper="a4r",height=8.27,width=11.69)
+for (i in 1:4){
+g1 <- ggplot(data=dat, aes(x=temps,y=vec)) + geom_bar(stat='identity')
+print(ggdraw()+draw_plot(g1, 0, 0, 1, 0.5))
+}
+dev.off()"
+
+
+species = @sync @parallel (merge) for i in eachindex(genera)
+    genus = JuliaDB.load(string("Genera/Worldclim/", split(genera[i], ".csv")[1]))
+    if length(genus) == 0
+        tab= table([],[], names = [:species,:num])
+    else
+    tab = groupby(:num => x->length(unique(x)), genus, :species)
+    tab = filter(p->p.species != "", tab)
+    end
+    tab
 end
-JLD.save("Binned_data.jld", "Binned_data", bins)
