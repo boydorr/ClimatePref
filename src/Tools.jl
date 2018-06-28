@@ -1,3 +1,4 @@
+using IndexedTables
 """
     create_reference(gridsize::Float64)
 
@@ -47,7 +48,7 @@ function genus_clean(genus::IndexedTables.NextTable)
 end
 
 """
-    genus_worldclim(genus::IndexedTables.NextTable)
+    genus_worldclim_average(genus::IndexedTables.NextTable)
 
 Function to clean occurrence data of botanic garden information, and
 join with worldclim data.
@@ -65,6 +66,12 @@ function genus_worldclim_average(genus::IndexedTables.NextTable,
     genus = popcol(genus, :refval)
     return genus
 end
+"""
+    genus_worldclim_monthly(genus::IndexedTables.NextTable)
+
+Function to clean occurrence data of botanic garden information, and
+join with monthly worldclim data.
+"""
 function genus_worldclim_monthly(genus::IndexedTables.NextTable,
     worldclim::IndexedTables.NextTable)
     worldclim_names = [:prec, :srad, :tavg, :tmax, :tmin, :vapr, :wind]
