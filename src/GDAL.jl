@@ -44,7 +44,7 @@ const AG = ArchGDAL
 
 vardict = Dict("bio" => NaN, "prec" => mm, "srad" => u"kJ"* u"m"^-2 * day^-1,
 "tavg" => °C, "tmax" => °C, "tmin" => °C, "vapr" => u"kPa", "wind" => u"m" * u"s"^-1)
-unitdict = Dict("K" => K)
+unitdict = Dict("K" => K, "m" => m)
 """
     read(f, filename)
 
@@ -68,7 +68,7 @@ searchdir(path,key) = filter(x->contains(x,key), readdir(path))
 
 Function to import a selected file from a path string.
 """
-function extractfile(dir::String)
+function extractfile(file::String)
     txy = [Float64, Int64(1), Int64(1)]
 
     read(file) do dataset
