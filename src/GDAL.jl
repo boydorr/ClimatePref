@@ -227,24 +227,6 @@ end
 function catERA()
 end
 
-
-"""
-    extractvalues(x::Vector{typeof(1.0°)},y::Vector{typeof(1.0°)},
-     array::AxisArray, dim::Unitful.Time)
-
-Function to extract values from a climate array, at specified x, y locations at
-a specific time, `dim`.
-"""
-
-function extractvalues(x::Vector{typeof(1.0°)},y::Vector{typeof(1.0°)},
-   array::Worldclim, dim::Unitful.Time)
-   all(x .<= 180.0) && all(x .>= -180.0) ||
-   error("X coordinate is out of bounds")
-   all(y .< 90.0) && all(y .> -90.0) ||
-   error("Y coordinate is out of bounds")
-   return map((i, j) -> array[(i-step/2)..(i+step/2),
-                              (j-step/2)..(j+step/2), dim][1], x, y)
-end
 """
     extractvalues(x::Vector{typeof(1.0°)},y::Vector{typeof(1.0°)},
         wc::Worldclim, dim::Unitful.Time)
