@@ -33,7 +33,7 @@
 
 using Unitful
 using Unitful.DefaultSymbols
-using myunitful
+using MyUnitful
 using AxisArrays
 using NetCDF
 

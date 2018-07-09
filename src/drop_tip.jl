@@ -1,3 +1,4 @@
+using Phylo
 function getinternalnodes(t::AbstractTree)
     return collect(nodenamefilter(x->!isleaf(x)& !isroot(x), t))
 end

@@ -1,0 +1,13 @@
+julia 0.5
+Diversity 0.2.8-
+AxisArrays
+Unitful
+MyUnitful
+NetCDF
+JuliaDB
+Optim
+Phylo
+Calculus
+IndexedTables
+GDAL
+ArchGDAL
