@@ -93,3 +93,18 @@ function genus_worldclim_monthly(genus::IndexedTables.NextTable,
     genus = pushcol(genus, :worldclim_month, months)
     return genus
 end
+
+
+function upresolution(era::ERA, rescale::Int64)
+    grid = size(era.array)
+    grid = (grid[1] .* rescale, grid[2] .* rescale, grid[3])
+    array = Array{typeof(era.array[1]), 3}(grid)
+    map(1:grid[3]) do time
+        for x in 1:size(era.array, 1)
+            for y in 1:size(era.array, 2),
+        array[(rescale*x-(rescale-1)):(rescale*x),
+            (rescale*y-(rescale - 1)):(rescale*y), time] = era.array[x, y, time]
+            end
+        end
+    end
+end

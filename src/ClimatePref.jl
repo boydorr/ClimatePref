@@ -8,7 +8,8 @@ export read, searchdir, extractworldclim, extractbioclim, extractERA,
  extractvalues, extractfile
 
 include("Tools.jl")
-export create_reference, gardenmask, genus_worldclim_average, genus_worldclim_monthly
+export create_reference, gardenmask, genus_worldclim_average,
+    genus_worldclim_monthly, upresolution
 
 include("Phylo_models.jl")
 export Brownian, Lambda, fitBrownian, fitLambda, varcovar
