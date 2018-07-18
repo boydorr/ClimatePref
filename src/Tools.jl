@@ -1,4 +1,5 @@
 using IndexedTables
+using AxisArrays
 """
     create_reference(gridsize::Float64)
 
@@ -94,17 +95,42 @@ function genus_worldclim_monthly(genus::IndexedTables.NextTable,
     return genus
 end
 
+"""
+    upresolution(genus::IndexedTables.NextTable)
 
+Function to clean occurrence data of botanic garden information.
+"""
 function upresolution(era::ERA, rescale::Int64)
-    grid = size(era.array)
+    array = upresolution(era.array)
+    return ERA(array)
+end
+function upresolution(wc::Worldclim, rescale::Int64)
+    array = upresolution(wc.array)
+    return Worldclim(array)
+end
+function upresolution(bc::Bioclim, rescale::Int64)
+    array = upresolution(bc.array)
+    return Bioclim(array)
+end
+function upresolution(aa::AxisArray, rescale::Int64)
+    grid = size(aa)
     grid = (grid[1] .* rescale, grid[2] .* rescale, grid[3])
-    array = Array{typeof(era.array[1]), 3}(grid)
+    array = Array{typeof(aa[1]), 3}(grid)
     map(1:grid[3]) do time
-        for x in 1:size(era.array, 1)
-            for y in 1:size(era.array, 2),
+        for x in 1:size(aa, 1)
+            for y in 1:size(aa, 2),
         array[(rescale*x-(rescale-1)):(rescale*x),
-            (rescale*y-(rescale - 1)):(rescale*y), time] = era.array[x, y, time]
+            (rescale*y-(rescale - 1)):(rescale*y), time] = aa[x, y, time]
             end
         end
     end
+    lon = aa.axes[1].val
+    smallstep = (lon[2] - lon[1]) / rescale
+    newlon = collect((lon[1]-smallstep):smallstep:lon[end])
+    lat = aa.axes[2].val
+    newlat = collect((lat[1]-smallstep):smallstep:lat[end])
+    return AxisArray(array,
+        Axis{:longitude}(newlon),
+        Axis{:latitude}(newlat),
+        Axis{:time}(aa.axes[3].val))
 end
