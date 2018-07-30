@@ -1,5 +1,6 @@
 using IndexedTables
 using AxisArrays
+using Unitful.DefaultSymbols
 """
     create_reference(gridsize::Float64)
 
@@ -101,24 +102,24 @@ end
 Function to clean occurrence data of botanic garden information.
 """
 function upresolution(era::ERA, rescale::Int64)
-    array = upresolution(era.array)
+    array = upresolution(era.array, rescale)
     return ERA(array)
 end
 function upresolution(wc::Worldclim, rescale::Int64)
-    array = upresolution(wc.array)
+    array = upresolution(wc.array, rescale)
     return Worldclim(array)
 end
 function upresolution(bc::Bioclim, rescale::Int64)
-    array = upresolution(bc.array)
+    array = upresolution(bc.array, rescale)
     return Bioclim(array)
 end
-function upresolution(aa::AxisArray, rescale::Int64)
+function upresolution(aa::AxisArray{T, 3} where T, rescale::Int64)
     grid = size(aa)
     grid = (grid[1] .* rescale, grid[2] .* rescale, grid[3])
     array = Array{typeof(aa[1]), 3}(grid)
     map(1:grid[3]) do time
         for x in 1:size(aa, 1)
-            for y in 1:size(aa, 2),
+            for y in 1:size(aa, 2)
         array[(rescale*x-(rescale-1)):(rescale*x),
             (rescale*y-(rescale - 1)):(rescale*y), time] = aa[x, y, time]
             end
@@ -126,11 +127,47 @@ function upresolution(aa::AxisArray, rescale::Int64)
     end
     lon = aa.axes[1].val
     smallstep = (lon[2] - lon[1]) / rescale
-    newlon = collect((lon[1]-smallstep):smallstep:lon[end])
+    if lon[1] == -180°
+        newlon = collect(lon[1]:smallstep:(lon[end]+smallstep))
+    else
+        newlon = collect((lon[1] -smallstep):smallstep:lon[end])
+    end
     lat = aa.axes[2].val
-    newlat = collect((lat[1]-smallstep):smallstep:lat[end])
+    smallstep = (lat[2] - lat[1]) / rescale
+    if lat[1] == -90°
+        newlat = collect(lat[1]:smallstep:(lat[end]+smallstep))
+    else
+        newlat = collect((lat[1]-smallstep):smallstep:lat[end])
+    end
     return AxisArray(array,
         Axis{:longitude}(newlon),
         Axis{:latitude}(newlat),
         Axis{:time}(aa.axes[3].val))
+end
+function upresolution(aa::AxisArray{T, 2} where T, rescale::Int64)
+    grid = size(aa) .* rescale
+    array = Array{typeof(aa[1]), 2}(grid)
+    for x in 1:size(aa, 1)
+        for y in 1:size(aa, 2)
+            array[(rescale*x-(rescale-1)):(rescale*x),
+            (rescale*y-(rescale - 1)):(rescale*y)] = aa[x, y]
+        end
+    end
+    lon = aa.axes[1].val
+    smallstep = (lon[2] - lon[1]) / rescale
+    if lon[1] == -180°
+        newlon = collect(lon[1]:smallstep:(lon[end]+smallstep))
+    else
+        newlon = collect((lon[1] -smallstep):smallstep:lon[end])
+    end
+    lat = aa.axes[2].val
+    smallstep = (lat[2] - lat[1]) / rescale
+    if lat[1] == -90°
+        newlat = collect(lat[1]:smallstep:(lat[end]+smallstep))
+    else
+        newlat = collect((lat[1]-smallstep):smallstep:lat[end])
+    end
+    return AxisArray(array,
+        Axis{:longitude}(newlon),
+        Axis{:latitude}(newlat))
 end
