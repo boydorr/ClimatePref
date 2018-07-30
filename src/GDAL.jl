@@ -84,16 +84,16 @@ function extractfile(file::String)
         AG.read!(bd, a);
     end;
     lat, long = size(a, 1), size(a, 2);
-    step1 = 360.0° / lat;
-    step2 = 180.0° / long;
+    step = 360.0° / lat;
+    #step = 180.0° / long;
 
     world = AxisArray(a[:, long:-1:1],
-                           Axis{:latitude}(-180.0°:step1:(180.0° - step1 / 2)),
-                           Axis{:longitude}(-90.0°:step2:(90.0°-step2/2)));
+                           Axis{:latitude}((-180.0°+ step):step:(180.0°)),
+                           Axis{:longitude}((-90.0°):step:90.0°));
 
     if txy[1] <: AbstractFloat
         world[world .== world[Axis{:latitude}(0°),
-                                             Axis{:longitude}(step2/2)]] *= NaN;
+                                             Axis{:longitude}(step)]] *= NaN;
     end;
     world
 end
@@ -108,10 +108,10 @@ function extractworldclim(dir::String)
     files = map(searchdir(dir, ".tif")) do files
         joinpath(dir, files)
     end
-    txy = [Float32, Int32(1), Int32(1)];
+    txy = [Float64, Int32(1), Int32(1)];
 
     read(files[1]) do dataset
-        txy[1] = AG.getdatatype(AG.getband(dataset, 1))
+        txy[1] = Float64
         txy[2] = AG.width(AG.getband(dataset, 1))
         txy[3] = AG.height(AG.getband(dataset, 1))
         print(dataset)
@@ -133,8 +133,8 @@ function extractworldclim(dir::String)
     step = 180.0° / long;
 
     world = AxisArray(b[:, long:-1:1, :] * unit,
-                           Axis{:latitude}(-180.0°:step:(180.0° - step / 2)),
-                           Axis{:longitude}(-90.0°:step:(90.0°-step/2)),
+                           Axis{:latitude}((-180.0°+ step):step:180.0°),
+                           Axis{:longitude}((-90.0°+step):step:90.0°),
                            Axis{:time}(1month:1month:12month));
 
     if txy[1] <: AbstractFloat
@@ -142,6 +142,7 @@ function extractworldclim(dir::String)
                                              Axis{:longitude}(0°),
                                              Axis{:time}(1month)]] *= NaN;
     end;
+
     Worldclim(world)
 end
 
@@ -225,6 +226,20 @@ function extractERA(dir::String, param::String, dim::Vector{T}) where T<: Unitfu
     ERA(world)
 end
 function catERA()
+end
+function extractCERA(dir::String, file::String, params::String)
+    filenames = searchdir(dir, file)
+    times = collect((1year+1month):1month:10year)
+    cera = extractERA(joinpath(dir, filenames[1]),params,
+        times)
+    for i in 2:12
+        times = ifelse(i == 12, collect(((i-1)*120month +1month):1month:((i-1)*120month +1year)),
+                    collect(((i-1)*120month +1month):1month:(i*10year)))
+        newcera = extractERA(joinpath(dir, filenames[i]),params,
+            times)
+        cera.array = cat(3, cera.array, newcera.array)
+    end
+    return cera
 end
 
 """
