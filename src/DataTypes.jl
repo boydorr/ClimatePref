@@ -28,6 +28,14 @@ mutable struct ERA <: AbstractClimate
         new(array)
     end
 end
+mutable struct CERA <: AbstractClimate
+    array::AxisArray
+    function CERA(array::AxisArray)
+        typeof(collect(axes(array, 3).val)[1])<: Unitful.Time ||
+            error("Third dimension of array must be time")
+        new(array)
+    end
+end
 
 mutable struct Reference <: AbstractClimate
     array::AxisArray
