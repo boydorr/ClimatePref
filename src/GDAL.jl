@@ -36,6 +36,7 @@ using Unitful.DefaultSymbols
 using MyUnitful
 using AxisArrays
 using NetCDF
+using Interpolations
 
 import Unitful: °, °C, mm
 import ArchGDAL
@@ -242,6 +243,18 @@ function extractCERA(dir::String, file::String, params::String)
     return cera
 end
 
+function findXY(wc::Worldclim, x::typeof(1.0°), y::typeof(1.0°), m::Int64)
+    a = wc.array
+    itp = interpolate(a, BSpline(Constant()), OnCell())
+    sc = scale(itp, a.axes[1].val, a.axes[2].val, 1:12)
+    return sc(x, y, m)
+end
+function findXY(wc::Worldclim, x::typeof(1.0°), y::typeof(1.0°))
+    a = wc.array
+    itp = interpolate(a, BSpline(Constant()), OnCell())
+    sc = scale(itp, a.axes[1].val, a.axes[2].val, 1:12)
+    return sc.(x, y, 1:12)
+end
 """
     extractvalues(x::Vector{typeof(1.0°)},y::Vector{typeof(1.0°)},
         wc::Worldclim, dim::Unitful.Time)
@@ -267,10 +280,9 @@ function extractvalues(x::Vector{typeof(1.0°)},y::Vector{typeof(1.0°)},
    error("X coordinate is out of bounds")
    all(y .< 90.0) && all(y .> -90.0) ||
    error("Y coordinate is out of bounds")
-   thisstep = axes(wc.array, 1).val[2] - axes(wc.array, 1).val[1]
    res = map((i, j) -> wc.array[(i-thisstep/2)..(i+thisstep/2),
                               (j-thisstep/2)..(j+thisstep/2),
-                              start(dim)..last(dim)][1,1,:], x, y)
+                              dim], x, y)
    return transpose(hcat(res...))
 end
 """
