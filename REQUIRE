@@ -2,6 +2,7 @@ julia 0.5
 Diversity 0.2.8-
 AxisArrays
 Unitful
+MyUnitful
 NetCDF
 Optim
 Phylo
