@@ -1,5 +1,6 @@
 using AxisArrays
 using Unitful
+import AxisArrays.axes
 abstract type AbstractClimate end
 
 mutable struct Worldclim <: AbstractClimate
