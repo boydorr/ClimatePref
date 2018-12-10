@@ -1,4 +1,4 @@
-julia 0.5
+julia 0.6-
 Diversity 0.2.8-
 AxisArrays
 Unitful
@@ -7,7 +7,6 @@ NetCDF
 Optim
 Phylo
 Calculus
-NamedTuples
 IndexedTables
 GDAL
 ArchGDAL
