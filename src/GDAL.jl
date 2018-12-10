@@ -38,7 +38,7 @@ using AxisArrays
 using NetCDF
 using Interpolations
 
-import Unitful: °, °C, mm
+import Unitful.°, Unitful.°C, Unitful.mm
 import ArchGDAL
 import Base.read
 const AG = ArchGDAL
