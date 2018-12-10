@@ -79,7 +79,7 @@ function extractfile(file::String)
         print(dataset)
     end
 
-    a = Array{txy[1], 2}(txy[2], txy[3])
+    a = Array{txy[1], 2}(undef, txy[2], txy[3])
     read(file) do dataset
         bd = AG.getband(dataset, 1);
         AG.read!(bd, a);
@@ -119,9 +119,9 @@ function extractworldclim(dir::String)
     end
 
     numfiles = length(files)
-    b = Array{txy[1], 3}(Int64(txy[2]), Int64(txy[3]), numfiles);
+    b = Array{txy[1], 3}(undef, Int64(txy[2]), Int64(txy[3]), numfiles);
     map(eachindex(files)) do count
-    a = Array{txy[1], 2}(txy[2], txy[3]);
+    a = Array{txy[1], 2}(undef, txy[2], txy[3]);
     read(files[count]) do dataset
         bd = AG.getband(dataset, 1);
         AG.read!(bd, a);
@@ -167,9 +167,9 @@ function extractbioclim(dir::String)
     end
 
     numfiles = length(files)
-    b = Array{txy[1], 3}(Int64(txy[2]), Int64(txy[3]), numfiles);
+    b = Array{txy[1], 3}(undef, Int64(txy[2]), Int64(txy[3]), numfiles);
     map(eachindex(files)) do count
-    a = Array{txy[1], 2}(txy[2], txy[3]);
+    a = Array{txy[1], 2}(undef, txy[2], txy[3]);
     read(files[count]) do dataset
         bd = AG.getband(dataset, 1);
         AG.read!(bd, a);
@@ -205,7 +205,7 @@ function extractERA(dir::String, param::String, dim::Vector{T}) where T<: Unitfu
     units = unitdict[units]
     array = ncread(dir, param)
     array = array * 1.0
-    array[array .≈ ncgetatt(dir, param, "_FillValue")] = NaN
+    array[array .≈ ncgetatt(dir, param, "_FillValue")] .= NaN
     scale_factor = ncgetatt(dir, param, "scale_factor") * units
     add_offset = ncgetatt(dir, param, "add_offset") * units
     array = array .* scale_factor .+ add_offset
@@ -215,11 +215,11 @@ function extractERA(dir::String, param::String, dim::Vector{T}) where T<: Unitfu
         array = uconvert.(°C, array)
     end
     if any(lon .== 180)
-        splitval = find(lon .== 180)[1]
+        splitval = findall(lon .== 180)[1]
         firstseg = collect((splitval+1):size(array,1))
         secondseg = collect(1:splitval)
         array = array[vcat(firstseg ,secondseg), :, :]
-        lon[firstseg] = 180 - lon[firstseg]
+        lon[firstseg] .= 180 .- lon[firstseg]
         lon = lon[vcat(reverse(firstseg), secondseg)]
     end
     world = AxisArray(array[:, end:-1:1, :], Axis{:longitude}(lon * °), Axis{:latitude}(lat * °),
