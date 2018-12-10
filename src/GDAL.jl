@@ -63,7 +63,7 @@ end
 
 Function to search a directory `path` using a given `key` string.
 """
-searchdir(path,key) = filter(x->contains(x,key), readdir(path))
+searchdir(path,key) = filter(x->occursin(key, x), readdir(path))
 """
     extractfile(dir::String)
 
