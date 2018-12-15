@@ -45,14 +45,14 @@ end
 
 
 function TestERA()
-    dir = "../test/Testdata/TestERA"
+    dir = dirname(pathof(ClimatePref)) * "/../test/Testdata/TestERA"
     data = extractERA(dir, "t2m", collect(1.0month:1month:10year))
     data.array = data.array[-10° .. 60°, 35° .. 80°, :]
     return data
 end
 
 function TestWorldclim()
-    dir = "../test/Testdata/TestWorldclim/"
+    dir = dirname(pathof(ClimatePref)) * "/../test/Testdata/TestWorldclim/"
     data = extractworldclim(joinpath(dir, "wc2.0_5m_srad"))
     return data
 end
