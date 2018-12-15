@@ -1,7 +1,7 @@
 module ClimatePref
 
 include("DataTypes.jl")
-export Worldclim, Bioclim, ERA, CERA, Reference, TestERA, TestWorldclim
+export Worldclim, Bioclim, ERA, CERA, Reference
 
 include("GDAL.jl")
 export read, searchdir, extractworldclim, extractbioclim, extractERA, extractCERA,
