@@ -42,15 +42,17 @@ mutable struct Reference <: AbstractClimate
     array::AxisArray
 end
 
+
+
 function TestERA()
-    dir = "/Users/claireh/Documents/PhD/GIT/ClimatePref/test/Testdata/TestERA"
+    dir = "../test/Testdata/TestERA"
     data = extractERA(dir, "t2m", collect(1.0month:1month:10year))
     data.array = data.array[-10° .. 60°, 35° .. 80°, :]
     return data
 end
 
 function TestWorldclim()
-    dir = "/Users/claireh/Documents/PhD/GIT/ClimatePref/test/Testdata/TestWorldclim/"
+    dir = "../test/Testdata/TestWorldclim/"
     data = extractworldclim(joinpath(dir, "wc2.0_5m_srad"))
     return data
 end
