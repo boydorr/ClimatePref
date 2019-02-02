@@ -227,7 +227,14 @@ function extractERA(dir::String, param::String, dim::Vector{T}) where T<: Unitfu
                         Axis{:time}(collect(dim)))
     ERA(world)
 end
-function catERA()
+function extractERA(dir::String, file::String, param::String, dim::Vector{Vector{T}}) where T<: Unitful.Time
+    filenames = searchdir(dir, file)
+    newera = Array{AxisArray, 1}(undef, length(filenames))
+    for i in eachindex(filenames)
+        newera[i] = extractERA(joinpath(dir, filenames[i]), param, dim[i]).array
+    end
+    catera = cat(dims=3, newera ...)
+    return ERA(catera)
 end
 function extractCERA(dir::String, file::String, params::String)
     filenames = searchdir(dir, file)
@@ -335,7 +342,7 @@ function extractvalues(x::Vector{typeof(1.0°)},y::Vector{typeof(1.0°)},
     thisstep2 = axes(era.array, 2).val[2] - axes(era.array, 2).val[1]
     map(x , y, years) do lat, lon, yr
         if yr < startyr || yr > endyr
-            return repmat([NaN], 12)
+            return fill(NaN, 12)
         else
             time = (yr - startyr) * 1year
             return Array(era.array[(lat - thisstep1/2)..(lat + thisstep1/2),
