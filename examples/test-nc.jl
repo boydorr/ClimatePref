@@ -5,10 +5,12 @@ using NetCDF
 using Unitful
 using Unitful.DefaultSymbols
 using AxisArrays
-using myunitful
+using MyUnitful
 using ClimatePref
-using RCall
+#using RCall
 using JuliaDB
+using Plots
+pyplot()
 
 # Load example dataset downloaded from EMCWF
 ncinfo("/Users/claireh/Downloads/test.nc")
@@ -30,11 +32,11 @@ tempax3 = extractERA(dir3, "t2m", collect(241month:1month:30year))
 dir4 = "data/era_interim_moda_2010"
 tempax4 = extractERA(dir4, "t2m", collect(361month:1month:38year))
 
-tempax = ERA(cat(3, tempax1.array, tempax2.array, tempax3.array, tempax4.array))
+tempax = ERA(cat(dims = 3, tempax1.array, tempax2.array, tempax3.array, tempax4.array))
 
 # Collect lats and lons from array
-lon = ustrip(axes(tempax.array, 1).val)
-lat = ustrip(axes(tempax.array, 2).val)
+lon = ustrip(AxisArrays.axes(tempax.array, 1).val)
+lat = ustrip(AxisArrays.axes(tempax.array, 2).val)
 # Strip array of units to plot
 tempsC = ustrip(Array(tempax.array))
 # Plot array as pdf with world shapefile on top
@@ -71,7 +73,6 @@ dev.off()"
 
 
 # Load GBIF data in order to extract t2m values from GPS locations
-
 sol = load("/Users/claireh/Documents/PhD/Data/GBIF/Solanum/output")
 sol = pushcol(sol, :id, collect(1:215440))
 coords = select(sol, (:decimallatitude, :decimallongitude))
@@ -90,26 +91,20 @@ plot(world, add = T)
 dev.off()"
 
 # Try plotting histograms of values for subset of species
-spp_names = ["Solanum dulcamara", "Solanum nigrum", "Solanum americanum",
-"Solanum parvifolium"]
-for i in spp_names
-    spp = filter(p-> p[:species] == i, sol)
+spp_names = ["Solanum dulcamara", "Solanum nigrum", "Solanum americanum","Solanum parvifolium"]
+for i in eachindex(spp_names)
+    spp = filter(p-> p[:species] == spp_names[i], sol)
     ids = select(spp, :id)
     subvals = ustrip.(vals[ids])
     res = vcat(subvals...)
-    res = res[!isnan.(res)]
-
-    @rput res
-    @rput i
-    # Plot in R
-    R"library(ggplot2);library(cowplot);library(gridExtra)
-    q = qplot(as.vector(res), geom='histogram',
-                xlab ='Average temperature (deg C)')+
-                stat_bin(breaks=seq(-20, 35, by=2.5))
-    pdf(file=paste('plots/era_',i,'.pdf', sep=''), paper = 'a4r', height= 8.27, width=11.69 )
-    print(q)
-    dev.off()
-    "
+    res = res[.!isnan.(res)]
+    if i == 1
+        display(histogram(res, bins = -20:2:30, grid = false, xlabel = "Temperature °C", label="", layout = (2,2),
+        title = spp_names[i]))
+    else
+        display(histogram!(res, bins = -20:2:30, grid = false, xlabel = "Temperature °C", label="", subplot = i,
+        title = spp_names[i]))
+    end
 end
 
 ### COMPARE DIRECTLY WITH WORLDCLIM ###

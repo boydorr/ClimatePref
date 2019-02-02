@@ -12,3 +12,5 @@ GDAL
 ArchGDAL
 Interpolations
 Compat
+RecipesBase
+Plots
