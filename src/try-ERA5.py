@@ -24,7 +24,7 @@ def retrieve_era_interim():
        Please note that at the moment only decade 2010 is available.
     '''
     yearStart = 1979                        # adjust to your requirements - as of 2017-07 only 2010-01-01 onwards is available
-    yearEnd = 2017                          # adjust to your requirements
+    yearEnd = 2018                         # adjust to your requirements
     months = [1,2,3,4,5,6,7,8,9,10,11,12]   # adjust to your requirements
 
     years = range(yearStart, yearEnd+1)
