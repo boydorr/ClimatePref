@@ -9,7 +9,7 @@ export read, searchdir, extractworldclim, extractbioclim, extractERA, extractCER
 
 include("Tools.jl")
 export create_reference, gardenmask, genus_worldclim_average,
-    genus_worldclim_monthly, upresolution
+    genus_worldclim_monthly, upresolution, getprofile
 
 include("Phylo_models.jl")
 export Brownian, Lambda, fitBrownian, fitLambda, varcovar

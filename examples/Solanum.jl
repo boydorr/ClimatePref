@@ -26,7 +26,7 @@ using JuliaDB
 #                       :institutioncode=>String,
 #                       :catalognumber=>String,
 #                       :recordnumber=>String))
-#save(gbif, "/Users/claireh/Documents/PhD/Data/GBIF/Solanum/output")
+#save(sol, "/Users/claireh/Documents/PhD/Data/GBIF/Solanum/output")
 sol = load("/Users/claireh/Documents/PhD/Data/GBIF/Solanum/output")
 sol = pushcol(sol, :id, collect(1:215440))
 # Select coordinates from solanum data

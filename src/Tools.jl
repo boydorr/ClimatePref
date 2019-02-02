@@ -1,6 +1,7 @@
 using IndexedTables
 using AxisArrays
 using Unitful.DefaultSymbols
+using Plots
 """
     create_reference(gridsize::Float64)
 
@@ -23,7 +24,7 @@ end
 Function to mask botanic garden locations found in `gard` from occurrence
 records found in `occ`, with an optional size for the mask, `masksize`.
 """
-function gardenmask(occ::IndexedTables.NextTable, gard::IndexedTables.NextTable,
+function gardenmask(occ::IndexedTable, gard::IndexedTable,
      masksize::Float64)
     coords = hcat(select(gard, :Latitude), select(gard, :Longitude))
     ref = create_reference(masksize)
@@ -43,7 +44,7 @@ end
 
 Function to clean occurrence data of botanic garden information.
 """
-function genus_clean(genus::IndexedTables.NextTable)
+function genus_clean(genus::IndexedTable)
     gardens = load("data/garden_table")
     genus = gardenmask(genus, gardens, 0.02)
     return genus
@@ -55,8 +56,8 @@ end
 Function to clean occurrence data of botanic garden information, and
 join with worldclim data.
 """
-function genus_worldclim_average(genus::IndexedTables.NextTable,
-    worldclim::IndexedTables.NextTable)
+function genus_worldclim_average(genus::IndexedTable,
+    worldclim::IndexedTable)
     worldclim_names = [:prec, :srad, :tavg, :tmax, :tmin, :vapr, :wind]
     genus = genus_clean(genus)
     ref = create_reference(1/12)
@@ -74,8 +75,8 @@ end
 Function to clean occurrence data of botanic garden information, and
 join with monthly worldclim data.
 """
-function genus_worldclim_monthly(genus::IndexedTables.NextTable,
-    worldclim::IndexedTables.NextTable)
+function genus_worldclim_monthly(genus::IndexedTable,
+    worldclim::IndexedTable)
     worldclim_names = [:prec, :srad, :tavg, :tmax, :tmin, :vapr, :wind]
     genus = genus_clean(genus)
     ref = create_reference(1/12)
@@ -170,4 +171,24 @@ function upresolution(aa::AxisArray{T, 2} where T, rescale::Int64)
     return AxisArray(array,
         Axis{:longitude}(newlon),
         Axis{:latitude}(newlat))
+end
+import Plots: px
+function getprofile(spp_names::Array{String, 1}, data::IndexedTable, variable_name::String, dims::Tuple{Int64, Int64} = (1,1))
+    for i in eachindex(spp_names)
+        (dims[1] * dims[2] == length(spp_names) || dims == (1,1)) || error("Dimensions not big enough for number of species")
+        spp = filter(p-> p[:species] == spp_names[i], data)
+        vals = select(spp, :val)
+        res = vcat(vals...)
+        res = res[.!isnan.(res)]
+        sp = ifelse(dims == (1,1), 1, i)
+        lg = ifelse(dims == (1,1), :left, :none)
+        title = ifelse(dims == (1,1), "", spp_names[i])
+        if i == 1
+            display(histogram(res, bins = -20:2:30, grid = false, xlabel = variable_name, label=spp_names[i], layout = dims, legend= lg, top_margin = 20px,
+            bottom_margin = 20px, title = title))
+        else
+            display(histogram!(res, bins = -20:2:30, grid = false, xlabel = variable_name, label=spp_names[i], subplot = sp, legend= lg, top_margin = 20px,
+            bottom_margin = 20px, title = title))
+        end
+    end
 end
