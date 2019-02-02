@@ -1,5 +1,7 @@
 using AxisArrays
 using Unitful
+using MyUnitful
+using RecipesBase
 import AxisArrays.axes
 abstract type AbstractClimate end
 
@@ -29,6 +31,22 @@ mutable struct ERA <: AbstractClimate
         new(array)
     end
 end
+
+@recipe function f(era::ERA, time::Unitful.Time)
+    tm = ustrip.(uconvert(year, time))
+    yr = floor(Int64, tm)
+    ind = round(Int64, (tm - yr)/(1/12))
+    typeof(ind) <: Int64 || error("NO")
+    mnth = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"][ind+1]
+    A = transpose(ustrip.(era.array[:, :, time]))
+    x = -179.25:0.75:179.25
+    y = -89.25:0.75:90
+    seriestype  :=  :heatmap
+    grid --> false
+    title --> "$yr $mnth"
+    x, y, A
+end
+
 mutable struct CERA <: AbstractClimate
     array::AxisArray
     function CERA(array::AxisArray)
