@@ -59,11 +59,15 @@ function runsim(eco::Ecosystem, times::Unitful.Time, reps::Int64)
     return abun
 end
 
-function plot_abun(abun::Array{Int64, 4}, spp::UnitRange{Int64} = 1:size(abun,1), thin::Int64=size(abun, 4))
+function plot_abun(abun::Array{Int64, 4}, grd::Tuple{Int64, Int64}, spp::UnitRange{Int64} = 1:size(abun,1), thin::Int64=size(abun, 4))
     pick = rand(1:size(abun, 4), thin)
+    if size(abun, 2) >16
+        abun = mapslices(sum, abun, dims = 2)
+        grd = (1,1)
+    end
     for k in 1:size(abun, 2)
         for n in spp
-            if n == 1 && k ==1
+            if k ==1 && n == spp[1]
                 display(plot(abun[1,k,:,pick], ylabel = "Abundance", xlabel = "Months", label="", grid = false, color = :($k), linealpha = 0.1, layout = grd, subplot = k,
                 ylim = (0, maximum(abun))))
             else
