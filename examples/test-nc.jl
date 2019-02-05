@@ -132,3 +132,13 @@ for i in spp_names
     dev.off()
     "
 end
+
+# Load GBIF data in order to extract t2m values from GPS locations
+#sol = JuliaDB.load("/Users/claireh/Documents/PhD/Data/GBIF/Solanum/output")
+#sol = pushcol(sol, :id, collect(1:215440))
+#coords = select(sol, (:decimallatitude, :decimallongitude))
+#x = select(coords, :decimallongitude); y = select(coords, :decimallatitude)
+#years = select(sol, :year)
+#vals = extractvalues(x * °, y * °, years, temp, 1980, 2000)
+#sol = pushcol(sol, :val, ustrip.(vals))
+#JuliaDB.save(sol, "/Users/claireh/Documents/PhD/Data/GBIF/Solanum/era_output")
