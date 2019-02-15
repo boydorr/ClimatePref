@@ -2,9 +2,21 @@ using AxisArrays
 using Unitful
 using MyUnitful
 using RecipesBase
+
 import AxisArrays.axes
+
+"""
+    AbstractClimate
+
+Abstract supertype of all climate data.
+"""
 abstract type AbstractClimate end
 
+"""
+    Worldclim <: AbstractClimate
+
+Type that houses data extracted from Worldclim raster files.
+"""
 mutable struct Worldclim <: AbstractClimate
     array::AxisArray
     function Worldclim(array::AxisArray)
@@ -14,6 +26,11 @@ mutable struct Worldclim <: AbstractClimate
     end
 end
 
+"""
+    Bioclim <: AbstractClimate
+
+Type that houses data extracted from Bioclim raster files.
+"""
 mutable struct Bioclim <: AbstractClimate
     array::AxisArray
     function Bioclim(array::AxisArray)
@@ -23,6 +40,11 @@ mutable struct Bioclim <: AbstractClimate
     end
 end
 
+"""
+    ERA <: AbstractClimate
+
+Type that houses data extracted from ERA raster files.
+"""
 mutable struct ERA <: AbstractClimate
     array::AxisArray
     function ERA(array::AxisArray)
@@ -47,6 +69,12 @@ end
     x, y, A
 end
 
+
+"""
+    CERA <: AbstractClimate
+
+Type that houses data extracted from CERA-20C raster files.
+"""
 mutable struct CERA <: AbstractClimate
     array::AxisArray
     function CERA(array::AxisArray)
@@ -56,21 +84,35 @@ mutable struct CERA <: AbstractClimate
     end
 end
 
+"""
+    Reference <: AbstractClimate
+
+Type that houses a reference data array.
+"""
 mutable struct Reference <: AbstractClimate
     array::AxisArray
 end
 
 
+"""
+    TestERA()
 
+Function that builds a test ERA dataset.
+"""
 function TestERA()
     dir = dirname(pathof(ClimatePref)) * "/../test/Testdata/TestERA"
-    data = extractERA(dir, "t2m", collect(1.0month:1month:10year))
+    data = readERA(dir, "t2m", collect(1.0month:1month:10year))
     data.array = data.array[-10° .. 60°, 35° .. 80°, :]
     return data
 end
 
+"""
+    TestWorldclim()
+
+Function that builds a test worldclim dataset.
+"""
 function TestWorldclim()
     dir = dirname(pathof(ClimatePref)) * "/../test/Testdata/TestWorldclim/"
-    data = extractworldclim(joinpath(dir, "wc2.0_5m_srad"))
+    data = readworldclim(joinpath(dir, "wc2.0_5m_srad"))
     return data
 end
