@@ -60,13 +60,13 @@ mutable struct Lambda
 end
 
 function show(io::IO, m::Lambda)
-roundedopts = round.(m.optimum, 2)
-roundedses = round.(m.se, 2)
-roundedLL = round(m.LL, 2)
-return print(io, "σ² = $(roundedopts[1]) ($(roundedopts[1] - 2*roundedses[1]) - $(roundedopts[1] + 2*roundedses[1]))", "\n",
-"z̄₀ = $(roundedopts[2]) ($(roundedopts[2] - 2*roundedses[2]) - $(roundedopts[2] + 2*roundedses[2]))", "\n",
-"λ = $(roundedopts[3]) ($(roundedopts[3] - 2*roundedses[3]) - $(roundedopts[3] + 2*roundedses[3]))","\n",
-"log-likelihood = $roundedLL")
+    roundedopts = round.(m.optimum, 2)
+    roundedses = round.(m.se, 2)
+    roundedLL = round(m.LL, 2)
+    return print(io, "σ² = $(roundedopts[1]) ($(roundedopts[1] - 2*roundedses[1]) - $(roundedopts[1] + 2*roundedses[1]))", "\n",
+    "z̄₀ = $(roundedopts[2]) ($(roundedopts[2] - 2*roundedses[2]) - $(roundedopts[2] + 2*roundedses[2]))", "\n",
+    "λ = $(roundedopts[3]) ($(roundedopts[3] - 2*roundedses[3]) - $(roundedopts[3] + 2*roundedses[3]))","\n",
+    "log-likelihood = $roundedLL")
 end
 
 function fitLambda(tree::AbstractTree, traits::Vector{F} where F <: AbstractFloat)
