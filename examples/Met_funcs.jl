@@ -45,14 +45,17 @@ function create_eco(numSpecies::Int64, grid::Tuple{Int64, Int64}, area::Unitful.
     eco = Ecosystem(sppl,abenv,rel)
 end
 function runsim(eco::Ecosystem, times::Unitful.Time, reps::Int64)
-    burnin = 1month; interval = 1month; timestep = 1month
+    interval = 1month
+    timestep = 1month
     lensim = length(0month:interval:times)
     abun = generate_storage(eco, lensim, reps)
     totalK = sum(eco.abenv.budget.matrix)
     grid = size(eco.abenv.habitat.matrix)
     for j in 1:reps
-        repopulate!(eco)
-        reenergise!(eco, totalK, grid)
+        if j > 1
+            repopulate!(eco)
+            reenergise!(eco, totalK, grid)
+        end
         thisstore = view(abun, :, :, :, j)
         simulate_record!(thisstore, eco, times, interval, timestep)
     end
