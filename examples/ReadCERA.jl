@@ -3,7 +3,7 @@ using AxisArrays
 using MyUnitful
 using Unitful
 
-ClimatePref.extractCERA("data", "cera_20C", "t2m")
+ClimatePref.readCERA("data", "cera_20C", "t2m")
 
 
 

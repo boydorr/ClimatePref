@@ -35,14 +35,14 @@ coords = select(sol, (:decimallatitude, :decimallongitude))
 # Import climate data from worldclim folders
 # One for each parameter
 dir = "/Users/claireh/Documents/PhD/Data/Worldclim/wc2.0_5m"
-tavg = extractworldclim(joinpath(dir, "wc2.0_5m_tavg"))
-tmax = extractworldclim(joinpath(dir, "wc2.0_5m_tmax"))
-tmin = extractworldclim(joinpath(dir, "wc2.0_5m_tmin"))
-prec = extractworldclim(joinpath(dir, "wc2.0_5m_prec"))
-srad = extractworldclim(joinpath(dir, "wc2.0_5m_srad"))
-vapr = extractworldclim(joinpath(dir, "wc2.0_5m_vapr"))
-wind = extractworldclim(joinpath(dir, "wc2.0_5m_wind"))
-bio = extractbioclim(joinpath(dir, "wc2.0_5m_bio"))
+tavg = readworldclim(joinpath(dir, "wc2.0_5m_tavg"))
+tmax = readworldclim(joinpath(dir, "wc2.0_5m_tmax"))
+tmin = readworldclim(joinpath(dir, "wc2.0_5m_tmin"))
+prec = readworldclim(joinpath(dir, "wc2.0_5m_prec"))
+srad = readworldclim(joinpath(dir, "wc2.0_5m_srad"))
+vapr = readworldclim(joinpath(dir, "wc2.0_5m_vapr"))
+wind = readworldclim(joinpath(dir, "wc2.0_5m_wind"))
+bio = readbioclim(joinpath(dir, "wc2.0_5m_bio"))
 
 # Extract values from each of the rasters at solanum locations
 x = select(coords, :decimallongitude); y = select(coords, :decimallatitude)

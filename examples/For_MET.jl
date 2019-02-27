@@ -25,8 +25,8 @@ times = [collect(1980year:1month:(1990year - 1.0month)),
     collect(2000year:1month:(2010year - 1.0month)),
     collect(2010year:1month:(2018year- 1.0month))]
 
-temp = extractERA(folder, file, "t2m", times)
-plot(temp, 2012year + December)
+temp = readERA(folder, file, "t2m", times)
+plot(temp, 2002year + November)
 
 # Load GBIF data in order to extract t2m values from GPS locations
 #sol = JuliaDB.load("/Users/claireh/Documents/PhD/Data/GBIF/Solanum/output")

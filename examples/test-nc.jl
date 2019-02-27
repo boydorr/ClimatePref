@@ -15,7 +15,7 @@ pyplot()
 # Load example dataset downloaded from EMCWF
 ncinfo("/Users/claireh/Downloads/test.nc")
 
-test = extractERA("/Users/claireh/Downloads/test.nc", "t2m",
+test = readERA("/Users/claireh/Downloads/test.nc", "t2m",
     collect(1.0month:1month:2month))
 
 ### Load world temperature data downloaded from ERA interim ###
@@ -24,13 +24,13 @@ test = extractERA("/Users/claireh/Downloads/test.nc", "t2m",
 ncinfo("data/era_interim_moda_1990")
 # Extract data for t2m parameter - temperature at 2m
 dir1 = "data/era_interim_moda_1980"
-tempax1 = extractERA(dir1, "t2m", collect(1.0month:1month:10year))
+tempax1 = readERA(dir1, "t2m", collect(1.0month:1month:10year))
 dir2 = "data/era_interim_moda_1990"
-tempax2 = extractERA(dir2, "t2m", collect(121month:1month:20year))
+tempax2 = readERA(dir2, "t2m", collect(121month:1month:20year))
 dir3 = "data/era_interim_moda_2000"
-tempax3 = extractERA(dir3, "t2m", collect(241month:1month:30year))
+tempax3 = readERA(dir3, "t2m", collect(241month:1month:30year))
 dir4 = "data/era_interim_moda_2010"
-tempax4 = extractERA(dir4, "t2m", collect(361month:1month:38year))
+tempax4 = readERA(dir4, "t2m", collect(361month:1month:38year))
 
 tempax = ERA(cat(dims = 3, tempax1.array, tempax2.array, tempax3.array, tempax4.array))
 
@@ -53,7 +53,7 @@ dev.off()"
 
 # Load data for land cover
 file = "data/World.tif"
-world = extractfile(file)
+world = readfile(file)
 wrld = ustrip.(world)
 @rput wrld
 R"image(wrld)"
@@ -110,7 +110,7 @@ end
 ### COMPARE DIRECTLY WITH WORLDCLIM ###
 dir = "/Users/claireh/Documents/PhD/Data/Worldclim/wc2.0_5m/wc2.0_5m_tavg"
 # Extract worldclim data for average temperature
-tavg = extractworldclim(dir)
+tavg = readworldclim(dir)
 vals = extractvalues(x * °, y * °, tavg, 1month:1month:12month)
 
 # Run through same species and plot histograms

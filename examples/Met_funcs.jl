@@ -24,7 +24,7 @@ function create_eco(numSpecies::Int64, grid::Tuple{Int64, Int64}, area::Unitful.
 
     #dir = "/Users/claireh/Documents/PhD/GIT/ClimatePref/data/wc"
     #dir = "/home/claireh/Documents/RawWorldclim"
-    #srad = extractworldclim(joinpath(dir, "wc2.0_5m_srad"))
+    #srad = readworldclim(joinpath(dir, "wc2.0_5m_srad"))
     #srad.array = srad.array[-10° .. 60°, 35° .. 80°]
     #meansrad = mean(srad.array[.!isnan.(srad.array)])
     #totalK = uconvert(kJ, meansrad * month * (area/(grid[1]*grid[2])))/5
