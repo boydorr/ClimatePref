@@ -1,3 +1,37 @@
+#!/usr/bin/env python
+import cdsapi
+
+c = cdsapi.Client()
+c.retrieve(
+        'reanalysis-era5-single-levels',
+        {
+            'variable': '2m_temperature',
+            'product_type': 'reanalysis',
+            'year': '2017',
+            'month': '01',
+            'day': '01',
+            'time': '12:00',
+            'grid': ['3', '3'],
+        }
+    )
+    
+#!/usr/bin/env python
+import cdsapi
+
+c = cdsapi.Client()
+c.retrieve('reanalysis-era5-complete', {    # do not change this!
+    'class'   : 'ea',
+    'expver'  : '1',
+    'stream'  : 'moda',
+    'type'    : 'an',
+    'param'   : '167.128',
+    'levtype' : 'sfc',
+    'date'    : '2018-01-01',
+    'decade'  : '2010',
+    'format'  : 'netcdf'
+}, 'testera5.nc')
+
+
 import cdsapi
 
 c = cdsapi.Client()

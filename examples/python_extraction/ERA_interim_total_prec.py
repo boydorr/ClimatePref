@@ -56,7 +56,7 @@ def era_interim_request(requestDates, decade, target):
         'type': 'fc',               # analysis (versus forecast, fc)
         'levtype': 'sfc',           # surface data (versus pressure level, pl, and model level, ml)
         'param': '228.128',         # here: sea surface temperature (param 34) and mean sea level pressure (param 151)
-        'step' : '24',
+        'step' : '0-12/12-24/24-36',
         'time' : '00:00:00',
         'grid': '0.75/0.75',        # horizontal resolution of output in degrees lat/lon
         'format': 'netcdf',         # get output in netcdf; only works with regular grids; for GRIB remove this line
