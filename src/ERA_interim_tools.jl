@@ -49,6 +49,6 @@ def era_interim_request(
     })
 """
 
-function retrieve_era_interim(param::String, from_year::Int64, to_year::Int64, filename::String = "era_interim", stream::String = "moda", modeltype::String = "an", levtype::String = "sfc", grid::String = "0.75/0.75", format::String = "netcdf", step::String = "0-12")
-    py"retrieve_era_interim"(param, from_year, to_year, filename = filename, stream = stream, modeltype = modeltype, levtype = levtype, grid = grid, format = format, step = step)
+function retrieve_era_interim(param::String, from_year::Int64, to_year::Int64, filename::String = "era_interim"; kws...)
+    py"retrieve_era_interim"(param, from_year, to_year, filename; kws...)
 end
