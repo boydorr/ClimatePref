@@ -12,7 +12,7 @@ const AG = ArchGDAL
 
 vardict = Dict("bio" => NaN, "prec" => mm, "srad" => u"kJ"* u"m"^-2 * day^-1,
 "tavg" => °C, "tmax" => °C, "tmin" => °C, "vapr" => u"kPa", "wind" => u"m" * u"s"^-1)
-unitdict = Dict("K" => K, "m" => m)
+unitdict = Dict("K" => K, "m" => m, "J m**-2" => J*m^2)
 """
     read(f, filename)
 
