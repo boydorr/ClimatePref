@@ -20,7 +20,13 @@ export extractvalues
 
 include("DataCleaning.jl")
 export create_reference, gardenmask, genus_worldclim_average,
-    genus_worldclim_monthly, upresolution, getprofile
+    genus_worldclim_monthly, upresolution
+
+include("Conversion.jl")
+export worldclim_to_DB, era_to_DB
+
+include("Plotting.jl")
+export getprofile
 
 include("PhyloModels.jl")
 export Brownian, Lambda, fitBrownian, fitLambda, varcovar
