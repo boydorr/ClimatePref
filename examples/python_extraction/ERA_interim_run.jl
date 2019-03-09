@@ -1,5 +1,8 @@
+using ClimatePref
+using PyCall
+
 yearStart = 1979
-yearEnd = 1979
+yearEnd = 2018
 
 ## Reanalysis products
 # E.g. temperature at 2m above sea level and soil temperature at level 1.
@@ -8,7 +11,7 @@ soiltemp_lvl1 = "139.128"
 retrieve_era_interim(tempat2m, yearStart, yearEnd,
     "era_int_temp2m")
 retrieve_era_interim(soiltemp_lvl1, yearStart, yearEnd,
-    'era_int_soiltemp1')
+    "era_int_soiltemp1")
 
 ## Forecast products
 # E.g. total precipitation and net solar radiation at the surface.
@@ -18,7 +21,6 @@ totalprec = "228.128"
 surfacenetsolar = "176.128"
 stream = "mdfa" # monthly means of daily forecast accumulations
 type ="fc"
-retrieve_era_interim(totalprec, yearStart, yearEnd,
-    stream, type, filename = "era_int_totalprec")
-retrieve_era_interim(surfacenetsolar, yearStart, yearEnd,
-    stream, type, filename = "era_int_netsolar")
+retrieve_era_interim(totalprec, yearStart, yearEnd, "era_int_totalprec",
+    stream = stream, modeltype = type)
+retrieve_era_interim(surfacenetsolar, yearStart, yearEnd, "era_int_netsolar", stream = stream, modeltype = type)
