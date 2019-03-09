@@ -116,7 +116,7 @@ function extractvalues(x::Vector{typeof(1.0°)},y::Vector{typeof(1.0°)},
         if yr < startyr || yr > endyr
             return fill(NaN, 12)
         else
-            time = (yr - startyr) * 1year
+            time = yr * 1year
             return Array(era.array[(lat - thisstep1/2)..(lat + thisstep1/2),
                   (lon - thisstep2/2)..(lon + thisstep2/2),
                   time .. (time + 11month)][1,1,:])
