@@ -222,15 +222,15 @@ and convert into an axis array.
 """
 function readCERA(dir::String, file::String, params::String)
     filenames = searchdir(dir, file)
-    times = collect((1year+1month):1month:10year)
+    times = collect((1901year+1month):1month:1910year)
     cera = readERA(joinpath(dir, filenames[1]),params,
         times)
     for i in 2:12
-        times = ifelse(i == 12, collect(((i-1)*120month +1month):1month:((i-1)*120month +1year)),
+        times = 1900year .+ ifelse(i == 12, collect(((i-1)*120month +1month):1month:((i-1)*120month +1year)),
                     collect(((i-1)*120month +1month):1month:(i*10year)))
         newcera = readERA(joinpath(dir, filenames[i]),params,
             times)
-        cera.array = cat(3, cera.array, newcera.array)
+        cera.array = cat(dims = 3, cera.array, newcera.array)
     end
-    return cera
+    return CERA(cera.array)
 end
