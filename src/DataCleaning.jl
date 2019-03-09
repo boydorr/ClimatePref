@@ -11,7 +11,7 @@ function create_reference(gridsize::Float64)
     x = 360 * (1/gridsize) + 1
     y = 180 * (1/gridsize) + 1
     gridsize = gridsize * °
-    refarray = AxisArray(Array{Int64, 2}(Int(x), Int(y)),
+    refarray = AxisArray(Array{Int64, 2}(undef, Int(x), Int(y)),
                          Axis{:longitude}(-180.0°:gridsize:180.0°),
                          Axis{:latitude}(-90.0°:gridsize:90.0°))
     refarray[1:length(refarray)]= collect(1:length(refarray))
@@ -117,12 +117,12 @@ end
 function upresolution(aa::AxisArray{T, 3} where T, rescale::Int64)
     grid = size(aa)
     grid = (grid[1] .* rescale, grid[2] .* rescale, grid[3])
-    array = Array{typeof(aa[1]), 3}(grid)
+    array = Array{typeof(aa[1]), 3}(undef, grid)
     map(1:grid[3]) do time
         for x in 1:size(aa, 1)
             for y in 1:size(aa, 2)
         array[(rescale*x-(rescale-1)):(rescale*x),
-            (rescale*y-(rescale - 1)):(rescale*y), time] = aa[x, y, time]
+            (rescale*y-(rescale - 1)):(rescale*y), time] .= aa[x, y, time]
             end
         end
     end
@@ -147,11 +147,11 @@ function upresolution(aa::AxisArray{T, 3} where T, rescale::Int64)
 end
 function upresolution(aa::AxisArray{T, 2} where T, rescale::Int64)
     grid = size(aa) .* rescale
-    array = Array{typeof(aa[1]), 2}(grid)
+    array = Array{typeof(aa[1]), 2}(undef, grid)
     for x in 1:size(aa, 1)
         for y in 1:size(aa, 2)
             array[(rescale*x-(rescale-1)):(rescale*x),
-            (rescale*y-(rescale - 1)):(rescale*y)] = aa[x, y]
+            (rescale*y-(rescale - 1)):(rescale*y)] .= aa[x, y]
         end
     end
     lon = aa.axes[1].val
@@ -171,24 +171,4 @@ function upresolution(aa::AxisArray{T, 2} where T, rescale::Int64)
     return AxisArray(array,
         Axis{:longitude}(newlon),
         Axis{:latitude}(newlat))
-end
-import Plots: px
-function getprofile(spp_names::Array{String, 1}, data::IndexedTable, variable_name::String, dims::Tuple{Int64, Int64} = (1,1))
-    for i in eachindex(spp_names)
-        (dims[1] * dims[2] == length(spp_names) || dims == (1,1)) || error("Dimensions not big enough for number of species")
-        spp = filter(p-> p[:species] == spp_names[i], data)
-        vals = select(spp, :val)
-        res = vcat(vals...)
-        res = res[.!isnan.(res)]
-        sp = ifelse(dims == (1,1), 1, i)
-        lg = ifelse(dims == (1,1), :left, :none)
-        title = ifelse(dims == (1,1), "", spp_names[i])
-        if i == 1
-            display(histogram(res, bins = -20:2:30, grid = false, xlabel = variable_name, label=spp_names[i], layout = dims, legend= lg, top_margin = 20px,
-            bottom_margin = 20px, title = title))
-        else
-            display(histogram!(res, bins = -20:2:30, grid = false, xlabel = variable_name, label=spp_names[i], subplot = sp, legend= lg, top_margin = 20px,
-            bottom_margin = 20px, title = title))
-        end
-    end
 end
