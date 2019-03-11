@@ -122,6 +122,7 @@ function extractvalues(x::Union{Missing, typeof(1.0°)},y::Union{Missing, typeof
         thisstep1 = AxisArrays.axes(era.array, 1).val[2] - AxisArrays.axes(era.array, 1).val[1]
         thisstep2 = AxisArrays.axes(era.array, 2).val[2] - AxisArrays.axes(era.array, 2).val[1]
         time = yr * 1year
+        y += 0.325°
         return era.array[(y - thisstep1/2)..(y + thisstep1/2),
               (x - thisstep2/2)..(x + thisstep2/2),
               time .. (time + 11month)][1,1,:]
