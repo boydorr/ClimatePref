@@ -35,14 +35,14 @@ plot(temp, 2002year + November)
 #x = select(coords, :decimallongitude); y = select(coords, :decimallatitude)
 #years = select(sol, :year)
 #vals = extractvalues(x * °, y * °, years, temp, 1980, 2000)
-#sol = pushcol(sol, :val, ustrip.(vals))
+#sol = pushcol(sol, :temp2m, ustrip.(vals))
 #JuliaDB.save(sol, "/Users/claireh/Documents/PhD/Data/GBIF/Solanum/era_output")
 
 sol = JuliaDB.load("/Users/claireh/Documents/PhD/Data/GBIF/Solanum/era_output")
 
 ## Plot histograms of temperature values for subset of species ##
 spp_names = ["Solanum dulcamara", "Solanum nigrum", "Solanum americanum","Solanum parvifolium"]
-getprofile(spp_names, sol, "Temperature °C", (2,2))
+getprofile(spp_names, sol, :temp2m, "Temperature °C", (2,2))
 
 
 numSpecies = 8; grd = (1,1); totalK = 250000.0kJ/km^2; area = 4.0km^2; req= 20.0kJ; individuals=10000
