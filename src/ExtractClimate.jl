@@ -5,6 +5,7 @@ using AxisArrays
 using NetCDF
 using Compat
 
+import JuliaDB.DIndexedTable
 
 function checkbounds(x::Vector{typeof(1.0°)}, y::Vector{typeof(1.0°)})
     -180.0 .<= x .<= 180.0 || error("X coordinate is out of bounds")
@@ -104,23 +105,48 @@ end
 Function to extract values from an ERA object, at specified x, y locations and
 years. Must be given a starting year of the dataset.
 """
+function extractvalues(tab::Union{IndexedTable, DIndexedTable}, era::ERA, varname::Symbol)
+    vals = map(t -> extractvalues(t.decimallatitude * °, t.decimallongitude * °, t.year, era), tab)
+    tab = pushcol(tab, varname, vals)
+    return tab
+end
+
 function extractvalues(x::Vector{typeof(1.0°)},y::Vector{typeof(1.0°)},
-    years::Vector{Int64}, era::ERA, startyr::Int64, endyr::Int64)
+    years::Vector{Int64}, era::ERA)
     all(x .<= 180.0°) && all(x .>= -180.0°) ||
     error("X coordinate is out of bounds")
     all(y .< 90.0°) && all(y .> -90.0°) ||
     error("Y coordinate is out of bounds")
+    startyr = ustrip(uconvert(year, axes(era.array)[3].val[1]))
+    endyr = ustrip(uconvert(year, axes(era.array)[3].val[end]))
     thisstep1 = axes(era.array, 1).val[2] - axes(era.array, 1).val[1]
     thisstep2 = axes(era.array, 2).val[2] - axes(era.array, 2).val[1]
     map(x , y, years) do lat, lon, yr
         if yr < startyr || yr > endyr
-            return fill(NaN, 12)
+            return fill(NaN, 12) .* unit(era.array[1,1,1])
         else
             time = yr * 1year
             return Array(era.array[(lat - thisstep1/2)..(lat + thisstep1/2),
                   (lon - thisstep2/2)..(lon + thisstep2/2),
                   time .. (time + 11month)][1,1,:])
         end
+    end
+end
+function extractvalues(x::typeof(1.0°),y::typeof(1.0°),
+    yr::Int64, era::ERA)
+    y <= 180.0° && y >= -180.0° || error("X coordinate is out of bounds")
+    x < 90.0° && x > -90.0° || error("Y coordinate is out of bounds")
+    startyr = ustrip(uconvert(year, axes(era.array)[3].val[1]))
+    endyr = ustrip(uconvert(year, axes(era.array)[3].val[end]))
+    thisstep1 = AxisArrays.axes(era.array, 1).val[2] - AxisArrays.axes(era.array, 1).val[1]
+    thisstep2 = AxisArrays.axes(era.array, 2).val[2] - AxisArrays.axes(era.array, 2).val[1]
+    if yr < startyr || yr > endyr
+        return fill(NaN, 12) .* unit(era.array[1,1,1])
+    else
+        time = yr * 1year
+        return era.array[(y - thisstep1/2)..(y + thisstep1/2),
+              (x - thisstep2/2)..(x + thisstep2/2),
+              time .. (time + 11month)][1,1,:]
     end
 end
 
