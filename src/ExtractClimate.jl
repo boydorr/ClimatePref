@@ -111,20 +111,20 @@ function extractvalues(tab::Union{IndexedTable, DIndexedTable}, era::ERA, varnam
     return tab
 end
 
-function extractvalues(x::Union{Missing, typeof(1.0°)},y::Union{Missing, typeof(1.0°)}, yr::Union{Missing, Int64}, era::ERA)
+function extractvalues(lat::Union{Missing, typeof(1.0°)}, lon::Union{Missing, typeof(1.0°)}, yr::Union{Missing, Int64}, era::ERA)
     startyr = ustrip(uconvert(year, axes(era.array)[3].val[1]))
     endyr = ustrip(uconvert(year, axes(era.array)[3].val[end]))
-    if any(ismissing.([x, y, yr])) || yr < startyr || yr > endyr
+    if any(ismissing.([lat, lon, yr])) || yr < startyr || yr > endyr
         return fill(NaN, 12) .* unit(era.array[1,1,1])
     else
-        y < 180.0° && y > -180.0° || error("X coordinate is out of bounds")
-        x < 90.0° && x > -90.0° || error("Y coordinate is out of bounds")
+        lon <= 180.0° && lon >= -180.0° || error("Longitude coordinate is out of bounds")
+        lat <= 90.0° && lat >= -90.0° || error("Latitude coordinate is out of bounds")
         thisstep1 = AxisArrays.axes(era.array, 1).val[2] - AxisArrays.axes(era.array, 1).val[1]
         thisstep2 = AxisArrays.axes(era.array, 2).val[2] - AxisArrays.axes(era.array, 2).val[1]
         time = yr * 1year
-        y += 0.375°
-        return era.array[(y - thisstep1/2)..(y + thisstep1/2),
-              (x - thisstep2/2)..(x + thisstep2/2),
+        lon += 0.375°
+        return era.array[(lon - thisstep1/2)..(lon + thisstep1/2),
+              (lat - thisstep2/2)..(lat + thisstep2/2),
               time .. (time + 11month)][1,1,:]
     end
 end
