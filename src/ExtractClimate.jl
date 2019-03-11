@@ -117,7 +117,7 @@ function extractvalues(x::Union{Missing, typeof(1.0°)},y::Union{Missing, typeof
     if any(ismissing.([x, y, yr])) || yr < startyr || yr > endyr
         return fill(NaN, 12) .* unit(era.array[1,1,1])
     else
-        y <= 180.0° && y >= -180.0° || error("X coordinate is out of bounds")
+        y < 180.0° && y > -180.0° || error("X coordinate is out of bounds")
         x < 90.0° && x > -90.0° || error("Y coordinate is out of bounds")
         thisstep1 = AxisArrays.axes(era.array, 1).val[2] - AxisArrays.axes(era.array, 1).val[1]
         thisstep2 = AxisArrays.axes(era.array, 2).val[2] - AxisArrays.axes(era.array, 2).val[1]
