@@ -112,13 +112,13 @@ function extractvalues(tab::Union{IndexedTable, DIndexedTable}, era::ERA, varnam
 end
 
 function extractvalues(x::Union{Missing, typeof(1.0°)},y::Union{Missing, typeof(1.0°)}, yr::Union{Missing, Int64}, era::ERA)
+    startyr = ustrip(uconvert(year, axes(era.array)[3].val[1]))
+    endyr = ustrip(uconvert(year, axes(era.array)[3].val[end]))
     if any(ismissing.([x, y, yr])) || yr < startyr || yr > endyr
         return fill(NaN, 12) .* unit(era.array[1,1,1])
     else
         y <= 180.0° && y >= -180.0° || error("X coordinate is out of bounds")
         x < 90.0° && x > -90.0° || error("Y coordinate is out of bounds")
-        startyr = ustrip(uconvert(year, axes(era.array)[3].val[1]))
-        endyr = ustrip(uconvert(year, axes(era.array)[3].val[end]))
         thisstep1 = AxisArrays.axes(era.array, 1).val[2] - AxisArrays.axes(era.array, 1).val[1]
         thisstep2 = AxisArrays.axes(era.array, 2).val[2] - AxisArrays.axes(era.array, 2).val[1]
         time = yr * 1year
