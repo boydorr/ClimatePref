@@ -5,6 +5,7 @@ Unitful
 MyUnitful
 NetCDF
 IndexedTables
+JuliaDB
 Calculus
 Optim
 Phylo
