@@ -111,6 +111,7 @@ function extractvalues(tab::Union{IndexedTable, DIndexedTable}, era::ERA, varnam
     return tab
 end
 
+
 function extractvalues(lat::Union{Missing, typeof(1.0°)}, lon::Union{Missing, typeof(1.0°)}, yr::Union{Missing, Int64}, era::ERA)
     startyr = ustrip(uconvert(year, axes(era.array)[3].val[1]))
     endyr = ustrip(uconvert(year, axes(era.array)[3].val[end]))
@@ -128,6 +129,8 @@ function extractvalues(lat::Union{Missing, typeof(1.0°)}, lon::Union{Missing, t
               time .. (time + 11month)][1,1,:]
     end
 end
+
+
 
 
 function extractvalues(x::Vector{typeof(1.0°)},y::Vector{typeof(1.0°)},
@@ -151,7 +154,23 @@ function extractvalues(x::Vector{typeof(1.0°)},y::Vector{typeof(1.0°)},
         end
     end
 end
-
+function extractvalues(tab::Union{IndexedTable, DIndexedTable}, ref::Reference, varname::Symbol)
+    vals = map(t -> extractvalues(t.decimallatitude * °, t.decimallongitude * °, ref), tab)
+    tab = pushcol(tab, varname, vals)
+    return tab
+end
+function extractvalues(lat::Union{Missing, typeof(1.0°)}, lon::Union{Missing, typeof(1.0°)}, ref::Reference)
+    if any(ismissing.([lat, lon]))
+        return NaN .* unit(ref.array[1,1])
+    else
+        lon <= 180.0° && lon >= -180.0° || error("Longitude coordinate is out of bounds")
+        lat <= 90.0° && lat >= -90.0° || error("Latitude coordinate is out of bounds")
+        thisstep1 = AxisArrays.axes(ref.array, 1).val[2] - AxisArrays.axes(ref.array, 1).val[1]
+        thisstep2 = AxisArrays.axes(ref.array, 2).val[2] - AxisArrays.axes(ref.array, 2).val[1]
+        return ref.array[(lon - thisstep1/2)..(lon + thisstep1/2),
+              (lat - thisstep2/2)..(lat + thisstep2/2)][1,1]
+    end
+end
 function extractvalues(x::Vector{typeof(1.0°)},y::Vector{typeof(1.0°)},
     ref::Reference)
     all(x .<= 180.0°) && all(x .>= -180.0°) ||
