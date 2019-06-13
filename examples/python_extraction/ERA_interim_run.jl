@@ -12,7 +12,12 @@ retrieve_era_interim(tempat2m, yearStart, yearEnd,
     "era_int_temp2m")
 retrieve_era_interim(soiltemp_lvl1, yearStart, yearEnd,
     "era_int_soiltemp1")
-
+retrieve_era_interim(soiltemp_lvl2, yearStart, yearEnd,
+    "era_int_soiltemp2")
+retrieve_era_interim(soiltemp_lvl3, yearStart, yearEnd,
+    "era_int_soiltemp3")
+retrieve_era_interim(soiltemp_lvl4, yearStart, yearEnd,
+    "era_int_soiltemp4")
 ## Forecast products
 # E.g. total precipitation and net solar radiation at the surface.
 # For these I need to access a separate stream and model type.
