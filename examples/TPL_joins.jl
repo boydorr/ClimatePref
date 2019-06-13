@@ -1,0 +1,5 @@
+tpl = load("~/Documents/ThePlantList")
+gbif = load("~/Documents/gbif/full_data/Era_GBIF")
+gbif = reindex(gbif, :species)
+tpl = pushcol(tpl, :SppID, 1:length(tpl))
+gbif_tpl = join(gbif, tpl, how = :inner, lkey = :species, rkey =:species)
