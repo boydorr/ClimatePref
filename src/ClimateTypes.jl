@@ -77,6 +77,20 @@ mutable struct Reference <: AbstractClimate
     array::AxisArray
 end
 
+"""
+    CRUTS <: AbstractClimate
+
+Type that houses data extracted from CRUTS raster files.
+"""
+mutable struct CRUTS <: AbstractClimate
+    array::AxisArray
+    function CRUTS(array::AxisArray)
+        typeof(collect(axes(array, 3).val)[1])<: Unitful.Time ||
+            error("Third dimension of array must be time")
+        new(array)
+    end
+end
+
 
 """
     TestERA()
