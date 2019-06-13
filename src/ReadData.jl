@@ -10,8 +10,7 @@ import ArchGDAL
 import Base.read
 const AG = ArchGDAL
 
-vardict = Dict("bio" => NaN, "prec" => mm, "srad" => u"kJ"* u"m"^-2 * day^-1,
-"tavg" => °C, "tmax" => °C, "tmin" => °C, "vapr" => u"kPa", "wind" => u"m" * u"s"^-1)
+vardict = Dict("bio" => NaN, "prec" => mm, "srad" => u"kJ"* u"m"^-2 * day^-1, "tavg" => K, "tmax" => K, "tmin" => K, "vapr" => u"kPa", "wind" => u"m" * u"s"^-1)
 unitdict = Dict("K" => K, "m" => m, "J m**-2" => J*m^2)
 """
     read(f, filename)
@@ -106,7 +105,9 @@ function readworldclim(dir::String)
                            Axis{:latitude}((-180.0°+ step):step:180.0°),
                            Axis{:longitude}((-90.0°+step):step:90.0°),
                            Axis{:time}(1month:1month:12month));
-
+    if unit == K
+        world .+= 273.15K
+    end
     if txy[1] <: AbstractFloat
         world[world .== world[Axis{:latitude}(0°),
                                              Axis{:longitude}(0°),
@@ -233,4 +234,106 @@ function readCERA(dir::String, file::String, params::String)
         cera.array = cat(dims = 3, cera.array, newcera.array)
     end
     return CERA(cera.array)
+end
+
+
+"""
+    readCRUTS(dir::String)
+
+Function to extract all raster files from a specified folder directory,
+and convert into an axis array.
+"""
+dir = "../../Data/CHELSA/CRUTS/prec/"
+function readCRUTS(dir::String)
+    files = map(searchdir(dir, ".tif")) do files
+        joinpath(dir, files)
+    end
+    txy = [Float64, Int32(1), Int32(1)];
+    files = files[1:10]
+    read(files[1]) do dataset
+        txy[1] = Float64
+        txy[2] = AG.width(AG.getband(dataset, 1))
+        txy[3] = AG.height(AG.getband(dataset, 1))
+        print(dataset)
+    end
+
+    numfiles = length(files)
+    b = Array{txy[1], 3}(Compat.undef, Int64(txy[2]), Int64(txy[3]), numfiles);
+    map(eachindex(files)) do count
+        a = Array{txy[1], 2}(Compat.undef, txy[2], txy[3]);
+        read(files[count]) do dataset
+            bd = AG.getband(dataset, 1);
+            AG.read!(bd, a);
+        end;
+        b[:, :, count] = a
+    end
+    lat, long = size(b, 1), size(b, 2);
+    variable = split(dir, "wc2.0_5m_")[2]
+    unit = vardict[variable]
+    step = 180.0° / long;
+
+    world = AxisArray(b[:, long:-1:1, :] * unit,
+                           Axis{:latitude}((-180.0°+ step):step:180.0°),
+                           Axis{:longitude}((-90.0°+step):step:90.0°),
+                           Axis{:time}(1month:1month:12month));
+    if unit == K
+        world .+= 273.15K
+    end
+    if txy[1] <: AbstractFloat
+        world[world .== world[Axis{:latitude}(0°),
+                                             Axis{:longitude}(0°),
+                                             Axis{:time}(1month)]] *= NaN;
+    end;
+
+    Worldclim(world)
+end
+
+"""
+    readCHELSA(dir::String)
+
+Function to extract all raster files from a specified folder directory,
+and convert into an axis array.
+"""
+dir = "../../Data/CHELSA/prec/"
+function readCHELSA(dir::String)
+    files = map(searchdir(dir, ".tif")) do files
+        joinpath(dir, files)
+    end
+    txy = [Float64, Int32(1), Int32(1)];
+    read(files[1]) do dataset
+        txy[1] = Float64
+        txy[2] = AG.width(AG.getband(dataset, 1))
+        txy[3] = AG.height(AG.getband(dataset, 1))
+        print(dataset)
+    end
+
+    numfiles = length(files)
+    b = Array{txy[1], 3}(Compat.undef, Int64(txy[2]), Int64(txy[3]), numfiles);
+    map(eachindex(files)) do count
+        a = Array{txy[1], 2}(Compat.undef, txy[2], txy[3]);
+        read(files[count]) do dataset
+            bd = AG.getband(dataset, 1);
+            AG.read!(bd, a);
+        end;
+        b[:, :, count] = a
+    end
+    lat, long = size(b, 1), size(b, 2);
+    variable = split(dir, "wc2.0_5m_")[2]
+    unit = vardict[variable]
+    step = 180.0° / long;
+
+    world = AxisArray(b[:, long:-1:1, :] * unit,
+                           Axis{:latitude}((-180.0°+ step):step:180.0°),
+                           Axis{:longitude}((-90.0°+step):step:90.0°),
+                           Axis{:time}(1month:1month:12month));
+    if unit == K
+        world .+= 273.15K
+    end
+    if txy[1] <: AbstractFloat
+        world[world .== world[Axis{:latitude}(0°),
+                                             Axis{:longitude}(0°),
+                                             Axis{:time}(1month)]] *= NaN;
+    end;
+
+    Worldclim(world)
 end
