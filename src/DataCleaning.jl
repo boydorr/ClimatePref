@@ -2,6 +2,7 @@ using IndexedTables
 using AxisArrays
 using Unitful.DefaultSymbols
 using Plots
+using Statistics
 """
     create_reference(gridsize::Float64)
 
@@ -98,9 +99,9 @@ function genus_worldclim_monthly(genus::IndexedTable,
 end
 
 """
-    upresolution(genus::IndexedTables.NextTable)
+    upresolution(data::Union{ERA, Worldclim, Bioclim}, rescale::Int64)
 
-Function to clean occurrence data of botanic garden information.
+Function to increase the resolution of a climate dataset, by a factor, `rescale`.
 """
 function upresolution(era::ERA, rescale::Int64)
     array = upresolution(era.array, rescale)
@@ -168,6 +169,70 @@ function upresolution(aa::AxisArray{T, 2} where T, rescale::Int64)
     else
         newlat = collect((lat[1]-smallstep):smallstep:lat[end])
     end
+    return AxisArray(array,
+        Axis{:longitude}(newlon),
+        Axis{:latitude}(newlat))
+end
+
+"""
+    downresolution(data::Union{ERA, Worldclim, Bioclim}, rescale::Int64)
+
+Function to decrease the resolution of a climate dataset, by a factor, `rescale`, and aggregation function, `fn`. The aggregation function has a default setting of taking the mean value.
+"""
+
+function downresolution(era::ERA, rescale::Int64; fn::Function = mean)
+    array = downresolution(era.array, rescale, fn)
+    return ERA(array)
+end
+function downresolution(wc::Worldclim, rescale::Int64; fn::Function = mean)
+    array = downresolution(wc.array, rescale, fn)
+    return Worldclim(array)
+end
+function downresolution(bc::Bioclim, rescale::Int64; fn::Function = mean)
+    array = downresolution(bc.array, rescale, fn)
+    return Bioclim(array)
+end
+function downresolution(aa::AxisArray{T, 3} where T, rescale::Int64, fn::Function)
+    grid = size(aa)
+    grid = ceil.(Int64, (grid[1] ./ rescale, grid[2] ./ rescale, grid[3]))
+    array = Array{typeof(aa[1]), 3}(undef, grid)
+    map(1:grid[3]) do tm
+        for x in 1:size(array, 1)
+            for y in 1:size(array, 2)
+                xcoords = filter(x -> x .<= size(aa, 1), (rescale*x-(rescale-1)):(rescale*x))
+                ycoords = filter(y -> y .<= size(aa, 2), (rescale*y-(rescale - 1)):(rescale*y))
+                array[x, y, tm] = fn(filter(!isnan, aa[xcoords, ycoords, tm]))
+            end
+        end
+    end
+    lon = aa.axes[1].val
+    bigstep = (lon[2] - lon[1]) * rescale
+    newlon = collect(lon[1]:bigstep:lon[end])
+    lat = aa.axes[2].val
+    bigstep = (lat[2] - lat[1]) * rescale
+    newlat = collect(lat[1]:bigstep:lat[end])
+    return AxisArray(array,
+        Axis{:longitude}(newlon),
+        Axis{:latitude}(newlat),
+        Axis{:time}(aa.axes[3].val))
+end
+function downresolution(aa::AxisArray{T, 2} where T, rescale::Int64, fn)
+    grid = size(aa)
+    grid = ceil.(Int64, (grid[1] ./ rescale, grid[2] ./ rescale))
+    array = Array{typeof(aa[1]), 2}(undef, grid)
+    for x in 1:size(array, 1)
+        for y in 1:size(array, 2)
+            xcoords = filter(x -> x .<= size(aa, 1), (rescale*x-(rescale-1)):(rescale*x))
+            ycoords = filter(y -> y .<= size(aa, 2), (rescale*y-(rescale - 1)):(rescale*y))
+            array[x, y] = fn(filter(!isnan, aa[xcoords, ycoords]))
+        end
+    end
+    lon = aa.axes[1].val
+    bigstep = (lon[2] - lon[1]) * rescale
+    newlon = collect(lon[1]:bigstep:lon[end])
+    lat = aa.axes[2].val
+    bigstep = (lat[2] - lat[1]) * rescale
+    newlat = collect(lat[1]:bigstep:lat[end])
     return AxisArray(array,
         Axis{:longitude}(newlon),
         Axis{:latitude}(newlat))
