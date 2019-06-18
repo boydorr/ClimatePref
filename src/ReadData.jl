@@ -11,7 +11,7 @@ import Base.read
 const AG = ArchGDAL
 
 vardict = Dict("bio" => NaN, "prec" => mm, "srad" => u"kJ"* u"m"^-2 * day^-1, "tavg" => K, "tmax" => K, "tmin" => K, "vapr" => u"kPa", "wind" => u"m" * u"s"^-1)
-unitdict = Dict("K" => K, "m" => m, "J m**-2" => J*m^2)
+unitdict = Dict("K" => K, "m" => m, "J m**-2" => J/m^2)
 """
     read(f, filename)
 
@@ -294,8 +294,7 @@ end
 Function to extract all raster files from a specified folder directory,
 and convert into an axis array.
 """
-dir = "../../Data/CHELSA/prec/"
-function readCHELSA(dir::String)
+function readCHELSA(dir::String, var_name::String)
     files = map(searchdir(dir, ".tif")) do files
         joinpath(dir, files)
     end
@@ -318,8 +317,7 @@ function readCHELSA(dir::String)
         b[:, :, count] = a
     end
     lat, long = size(b, 1), size(b, 2);
-    variable = split(dir, "wc2.0_5m_")[2]
-    unit = vardict[variable]
+    unit = vardict[var_name]
     step = 180.0° / long;
 
     world = AxisArray(b[:, long:-1:1, :] * unit,
@@ -335,5 +333,5 @@ function readCHELSA(dir::String)
                                              Axis{:time}(1month)]] *= NaN;
     end;
 
-    Worldclim(world)
+    CHELSA(world)
 end

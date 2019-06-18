@@ -22,8 +22,27 @@ function worldclim_to_DB(wc::Worldclim)
         names = [:x, :y, :month, :val])
     coords = hcat(select(worldclim_tab, :x), select(worldclim_tab, :y))
     ids = extractvalues(coords[:, 1], coords[:, 2], ref)
-    worldclim_tab = pushcol(worldclim_tab, :refid, ids)
+    worldclim_tab = pushcol(worldclim_tab, :refval, ids)
     return worldclim_tab
+end
+
+function CHELSA_to_DB(ch::CHELSA)
+    gridsize = step(axes(ch.array, 1).val)
+    ref = create_reference(ustrip.(gridsize))
+    x = collect(axes(ch.array, 1).val)
+    y = collect(axes(ch.array, 2).val)
+    months = 1:12
+    expandedxy = collect(product(x, y, months))
+    newx = vcat(map(x-> x[1], expandedxy)...)
+    newy = vcat(map(x-> x[2], expandedxy)...)
+    months = vcat(map(x-> x[3], expandedxy)...)
+    values = ch.array[1:end]
+    ch_tab = table(newx, newy, months, values,
+        names = [:x, :y, :month, :val])
+    coords = hcat(select(ch_tab, :x), select(ch_tab, :y))
+    ids = extractvalues(coords[:, 1], coords[:, 2], ref)
+    ch_tab = pushcol(ch_tab, :refval, ids)
+    return ch_tab
 end
 
 function era_to_DB(era::ERA)
@@ -44,6 +63,6 @@ function era_to_DB(era::ERA)
     era_tab = table(newx * °, newy * °, newmonth .+ 1, newyr, values, names = [:x, :y, :month, :year, :val])
     coords = hcat(select(era_tab, :x), select(era_tab, :y))
     ids = extractvalues(coords[:, 1], coords[:, 2], ref)
-    era_tab = pushcol(era_tab, :refid, ids)
+    era_tab = pushcol(era_tab, :refval, ids)
     return era_tab
 end

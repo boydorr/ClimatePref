@@ -91,6 +91,20 @@ mutable struct CRUTS <: AbstractClimate
     end
 end
 
+"""
+    CHELSA <: AbstractClimate
+
+Type that houses data extracted from CHELSA raster files.
+"""
+mutable struct CHELSA <: AbstractClimate
+    array::AxisArray
+    function CHELSA(array::AxisArray)
+        size(array, 3) == 12 ||
+            error("There should be 12 months of data for CHELSA")
+        new(array)
+    end
+end
+
 
 """
     TestERA()
