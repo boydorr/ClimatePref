@@ -6,6 +6,8 @@ function __init__()
         println("Creating ECMWF interface ...")
         include("ERA_interim_tools.jl")
         export retrieve_era_interim
+        include("ECMWF_tools.jl")
+        export retrieve_ECMWF
     end
 end
 
