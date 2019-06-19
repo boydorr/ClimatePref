@@ -28,7 +28,7 @@ def retrieve_ECMWF(param, from_year, to_year, filename, **kwargs):
 
 def ECMWF_request(
         param, request_dates, decade, target,
-        eclass = 'ei', dataset = 'interim', stream='moda', modeltype='an', levtype='sfc', grid='0.75/0.75', format='netcdf', step='0-12'
+        eclass = 'ei', dataset = 'interim', stream='moda', modeltype='an', levtype='sfc', grid='0.75/0.75', format='netcdf', step='0-12', num = '0'
 ):
 
     server.retrieve({
@@ -36,6 +36,7 @@ def ECMWF_request(
         'dataset': dataset,
         'expver':  '1',
         'stream':  stream,
+        'number':  num,
         'type':    modeltype,
         'levtype': levtype,
         'param':   param,
