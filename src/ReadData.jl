@@ -294,7 +294,7 @@ end
 Function to extract all raster files from a specified folder directory,
 and convert into an axis array.
 """
-function readCHELSA(dir::String, var_name::String)
+function readCHELSA(dir::String, var_name::String; res = 1, fn = mean)
     files = map(searchdir(dir, ".tif")) do files
         joinpath(dir, files)
     end
@@ -307,14 +307,14 @@ function readCHELSA(dir::String, var_name::String)
     end
 
     numfiles = length(files)
-    b = Array{txy[1], 3}(Compat.undef, Int64(txy[2]), Int64(txy[3]), numfiles);
+    b = Array{txy[1], 3}(Compat.undef, ceil(Int64, txy[2]/res),  ceil(Int64, txy[3]/res), numfiles);
     map(eachindex(files)) do count
         a = Array{txy[1], 2}(Compat.undef, txy[2], txy[3]);
         read(files[count]) do dataset
             bd = AG.getband(dataset, 1);
             AG.read!(bd, a);
         end;
-        b[:, :, count] = a
+        b[:, :, count] = downresolution(a, res, fn)
     end
     lat, long = size(b, 1), size(b, 2);
     unit = vardict[var_name]

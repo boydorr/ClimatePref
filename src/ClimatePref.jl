@@ -13,7 +13,7 @@ include("ClimateTypes.jl")
 export Worldclim, Bioclim, ERA, CERA, Reference
 
 include("ReadData.jl")
-export read, searchdir, readworldclim, readbioclim, readERA, readCERA, readfile
+export read, searchdir, readworldclim, readbioclim, readERA, readCERA, readfile, readCHELSA
 
 include("ReadGBIF.jl")
 export ReadGBIF
@@ -26,7 +26,7 @@ export create_reference, gardenmask, genus_worldclim_average,
     genus_worldclim_monthly, upresolution, downresolution
 
 include("Conversion.jl")
-export worldclim_to_DB, era_to_DB
+export worldclim_to_DB, era_to_DB, CHELSA_to_DB
 
 include("Plotting.jl")
 export getprofile
