@@ -237,3 +237,17 @@ function downresolution(aa::AxisArray{T, 2} where T, rescale::Int64, fn)
         Axis{:longitude}(newlon),
         Axis{:latitude}(newlat))
 end
+
+function downresolution(array::Array{T, 2} where T, rescale::Int64, fn)
+    grid = size(array)
+    grid = ceil.(Int64, (grid[1] ./ rescale, grid[2] ./ rescale))
+    resized_array = Array{typeof(array[1]), 2}(undef, grid)
+    for x in 1:size(resized_array, 1)
+        for y in 1:size(resized_array, 2)
+            xcoords = filter(x -> x .<= size(array, 1), (rescale*x-(rescale-1)):(rescale*x))
+            ycoords = filter(y -> y .<= size(array, 2), (rescale*y-(rescale - 1)):(rescale*y))
+            resized_array[x, y] = fn(filter(!isnan, array[xcoords, ycoords]))
+        end
+    end
+    return resized_array
+end
