@@ -318,12 +318,13 @@ function readCHELSA(dir::String, var_name::String; res = 1, fn = mean)
     end
     lat, long = size(b, 1), size(b, 2);
     unit = vardict[var_name]
-    step = 180.0° / long;
+    step1 = 360.0° / lat;
+    step2 = 180° / long;
 
     world = AxisArray(b[:, long:-1:1, :] * unit,
-                           Axis{:latitude}((-180.0°+ step):step:180.0°),
-                           Axis{:longitude}((-90.0°+step):step:90.0°),
-                           Axis{:time}(1month:1month:12month));
+                           Axis{:latitude}((-180.0°+ step1):step1:180.0°),
+                           Axis{:longitude}((-90.0°+step2):step2:90.0°),
+                           Axis{:time}(1month:1month:35years));
     if unit == K
         world .+= 273.15K
     end
