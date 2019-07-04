@@ -12,9 +12,7 @@ function create_reference(gridsize::Float64)
     x = 360 * (1/gridsize) + 1
     y = 180 * (1/gridsize) + 1
     gridsize = gridsize * °
-    refarray = AxisArray(Array{Int64, 2}(undef, Int(x), Int(y)),
-                         Axis{:longitude}(-180.0°:gridsize:180.0°),
-                         Axis{:latitude}(-90.0°:gridsize:90.0°))
+    refarray = AxisArray(Array{Int64, 2}(undef, Int(floor(x)), Int(floor(y))),Axis{:longitude}(-180.0°:gridsize:180.0°),Axis{:latitude}(-90.0°:gridsize:90.0°))
     refarray[1:length(refarray)]= collect(1:length(refarray))
     ref = Reference(refarray)
 end
