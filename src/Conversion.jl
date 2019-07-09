@@ -45,7 +45,7 @@ function CHELSA_to_DB(ch::CHELSA)
     return ch_tab
 end
 
-function era_to_DB(era::ERA)
+function era_to_DB(era::Union{CERA, ERA})
     gridsize = axes(era.array, 1).val[2] - axes(era.array, 1).val[1]
     ref = create_reference(Float64(ustrip.(gridsize)))
     x = collect(axes(era.array, 1).val)
@@ -65,4 +65,8 @@ function era_to_DB(era::ERA)
     ids = extractvalues(coords[:, 1], coords[:, 2], ref)
     era_tab = pushcol(era_tab, :refval, ids)
     return era_tab
+end
+
+function cera_to_DB(cera::CERA)
+    return era_to_DB(cera)
 end
