@@ -11,7 +11,7 @@ import Base.read
 const AG = ArchGDAL
 
 vardict = Dict("bio" => NaN, "prec" => mm, "srad" => u"kJ"* u"m"^-2 * day^-1, "tavg" => K, "tmax" => K, "tmin" => K, "vapr" => u"kPa", "wind" => u"m" * u"s"^-1)
-unitdict = Dict("K" => K, "m" => m, "J m**-2" => J/m^2)
+unitdict = Dict("K" => K, "m" => m, "J m**-2" => J/m^2, "m**3 m**-3" => m^3)
 """
     read(f, filename)
 
@@ -308,13 +308,13 @@ function readCHELSA(dir::String, var_name::String; res = 1, fn = mean)
 
     numfiles = length(files)
     b = Array{txy[1], 3}(Compat.undef, ceil(Int64, txy[2]/res),  ceil(Int64, txy[3]/res), numfiles);
+    a = Array{txy[1], 2}(Compat.undef, txy[2], txy[3]);
     map(eachindex(files)) do count
-        a = Array{txy[1], 2}(Compat.undef, txy[2], txy[3]);
         read(files[count]) do dataset
             bd = AG.getband(dataset, 1);
             AG.read!(bd, a);
         end;
-        b[:, :, count] = downresolution(a, res, fn)
+        downresolution!(b[:, :, count], a, res, fn)
     end
     lat, long = size(b, 1), size(b, 2);
     unit = vardict[var_name]
