@@ -20,6 +20,9 @@ export read, searchdir, readworldclim, readbioclim, readERA, readCERA, readfile,
 include("ReadGBIF.jl")
 export ReadGBIF
 
+include("ReadTPL.jl")
+export ReadTPL
+
 include("ExtractClimate.jl")
 export extractvalues
 
