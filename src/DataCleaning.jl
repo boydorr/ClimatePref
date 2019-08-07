@@ -3,7 +3,31 @@ using AxisArrays
 using Unitful.DefaultSymbols
 using Plots
 using Statistics
-import Simulation.convert_coords
+
+"""
+    convert_coords(i::Int64, width::Int64)
+    convert_coords(x::Int64, y::Int64, width::Int64)
+Function to convert coordinates from two-dimensional (`x`,`y`) format to one dimension (`i`), or vice versa, using the `width` of the grid. This function can also be applied to arrays of coordinates.
+"""
+function convert_coords(i::Int64, width::Int64)
+  x = ((i - 1) % width) + 1
+  y = div((i - 1), width)  + 1
+  return (x, y)
+end
+function convert_coords(i::Array{Int64, 1}, width::Int64)
+  x = ((i .- 1) .% width) .+ 1
+  y = div.((i .- 1), width)  .+ 1
+  return (x, y)
+end
+function convert_coords(x::Int64, y::Int64, width::Int64)
+  i = x + width * (y - 1)
+  return i
+end
+
+function convert_coords(x::Array{Int64, 1}, y::Array{Int64, 1}, width::Int64)
+  i = x .+ (width .* (y .- 1))
+  return i
+end
 """
     create_reference(gridsize::Float64)
 
