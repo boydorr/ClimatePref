@@ -38,12 +38,13 @@ searchdir(path,key) = filter(x->Compat.occursin(key, x), readdir(path))
 Function to import a selected file from a path string.
 """
 function readfile(file::String)
-    txy = [Float64, Int64(1), Int64(1)]
+    txy = [Float64, Int64(1), Int64(1), Float64(1)]
     #
     read(file) do dataset
         #txy[1] = AG.getdatatype(AG.getband(dataset, 1))
         txy[2] = AG.width(AG.getband(dataset, 1))
         txy[3] = AG.height(AG.getband(dataset, 1))
+        txy[4] = AG.getnodatavalue(AG.getband(dataset, 1))
         print(dataset)
     end
 
@@ -61,8 +62,36 @@ function readfile(file::String)
                            Axis{:longitude}((-90.0°):step:90.0°));
 
     if txy[1] <: AbstractFloat
-        world[world .== world[Axis{:latitude}(0°),
-            Axis{:longitude}(step)]] *= NaN;
+        world[world .== txy[4]] *= NaN;
+    end;
+    world
+end
+
+function readfile(file::String, xmin, xmax, ymin, ymax)
+    txy = [Float64, Int64(1), Int64(1), Float64(1)]
+    #
+    read(file) do dataset
+        #txy[1] = AG.getdatatype(AG.getband(dataset, 1))
+        txy[2] = AG.width(AG.getband(dataset, 1))
+        txy[3] = AG.height(AG.getband(dataset, 1))
+        txy[4] = AG.getnodatavalue(AG.getband(dataset, 1))
+        print(dataset)
+    end
+
+    a = Array{txy[1], 2}(Compat.undef, txy[2], txy[3])
+    read(file) do dataset
+        bd = AG.getband(dataset, 1);
+        AG.read!(bd, a);
+    end;
+    lat, long = size(a, 1), size(a, 2);
+    step = abs(xmin - xmax) / lat;
+
+    world = AxisArray(a,
+                           Axis{:latitude}((xmin+ step):step:xmax),
+                           Axis{:longitude}((ymin+ step):step:ymax));
+
+    if txy[1] <: AbstractFloat
+        world[world .== world[1]] *= NaN;
     end;
     world
 end
@@ -182,9 +211,9 @@ function readERA(dir::String, param::String, dim::Vector{T}) where T<: Unitful.T
     array = array .* scale_factor .+ add_offset
 
     # If temperature param, need to convert from Kelvin
-    if typeof(units) <: Unitful.TemperatureUnits
-        array = uconvert.(°C, array)
-    end
+    #if typeof(units) <: Unitful.TemperatureUnits
+    #    array = uconvert.(°C, array)
+    #end
     if any(lon .== 180)
         splitval = Compat.findall(lon .== 180)[1]
         firstseg = collect((splitval+1):size(array,1))
