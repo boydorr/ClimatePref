@@ -18,7 +18,7 @@ unitdict = Dict("K" => K, "m" => m, "J m**-2" => J/m^2, "m**3 m**-3" => m^3)
 Function to read raster file into julia.
 """
 function read(f, filename)
-    return AG.registerdrivers() do
+    return AG.environment() do
         AG.read(filename) do dataset
             f(dataset)
         end
