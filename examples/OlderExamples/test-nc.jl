@@ -5,7 +5,7 @@ using NetCDF
 using Unitful
 using Unitful.DefaultSymbols
 using AxisArrays
-using MyUnitful
+using ClimatePref.Units
 using ClimatePref
 #using RCall
 using JuliaDB

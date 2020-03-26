@@ -1,7 +1,7 @@
 using AxisArrays
 using JuliaDB
 using ClimatePref
-using MyUnitful
+using ClimatePref.Units
 using Unitful
 using Unitful.DefaultSymbols
 using Base.Iterators

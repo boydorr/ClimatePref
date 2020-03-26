@@ -1,5 +1,5 @@
 using ClimatePref
-using MyUnitful
+using ClimatePref.Units
 using JuliaDB
 folder = "."
 files = ["era_int_netsolar", "era_int_soiltemp1", "era_int_temp2m", "era_int_totalprec"]
@@ -30,7 +30,7 @@ for i in eachindex(files)
 end
 
 using ClimatePref
-using MyUnitful
+using ClimatePref.Units
 using JuliaDB
 folder = "../../ECMWF"
 files = ["era_int_netsolar", "era_int_soiltemp1", "era_int_temp2m", "era_int_totalprec"]

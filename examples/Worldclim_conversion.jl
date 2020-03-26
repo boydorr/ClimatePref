@@ -1,7 +1,7 @@
 using Unitful
 using AxisArrays
 using ClimatePref
-using MyUnitful
+using ClimatePref.Units
 using JuliaDB
 
 dir = "/Users/claireh/Documents/PhD/Data/Worldclim/wc2.0_5m"
@@ -19,7 +19,7 @@ worldclim_to_DB(tavg)
 
 
 using ClimatePref
-using MyUnitful
+using ClimatePref.Units
 using JuliaDB
 folder = "wc2.0_5m"
 files = ["wc2.0_5m_tavg", "wc2.0_5m_tmax", "wc2.0_5m_tmin", "wc2.0_5m_prec", "wc2.0_5m_srad", "wc2.0_5m_vapr", "wc2.0_5m_wind"]

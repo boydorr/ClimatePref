@@ -1,7 +1,7 @@
 using Unitful
 using AxisArrays
 using ClimatePref
-using MyUnitful
+using ClimatePref.Units
 using Iterators
 
 import Unitful: °, °C, mm

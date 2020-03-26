@@ -1,6 +1,6 @@
 using AxisArrays
 using Unitful
-using MyUnitful
+using ClimatePref.Units
 using RecipesBase
 
 import AxisArrays.axes

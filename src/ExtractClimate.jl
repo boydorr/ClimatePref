@@ -1,6 +1,6 @@
 using Unitful
 using Unitful.DefaultSymbols
-using MyUnitful
+using ClimatePref.Units
 using AxisArrays
 using NetCDF
 using Compat

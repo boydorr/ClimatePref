@@ -1,6 +1,6 @@
 using ClimatePref
 using AxisArrays
-using MyUnitful
+using ClimatePref.Units
 using Unitful
 
 ClimatePref.readCERA("data", "cera_20C", "t2m")

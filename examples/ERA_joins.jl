@@ -1,7 +1,7 @@
 using JuliaDB
 using ClimatePref
 using Unitful
-using MyUnitful
+using ClimatePref.Units
 
 # Load GBIF and add in unique ID column
 gbif = load("GBIF_TPL")
