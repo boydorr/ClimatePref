@@ -5,8 +5,6 @@ using AxisArrays
 using NetCDF
 using Compat
 
-import JuliaDB.DIndexedTable
-
 function checkbounds(x::Vector{typeof(1.0°)}, y::Vector{typeof(1.0°)})
     -180.0 .<= x .<= 180.0 || error("X coordinate is out of bounds")
     -90.0 .<= x .<= 90.0 || error("Y coordinate is out of bounds")
@@ -105,7 +103,7 @@ end
 Function to extract values from an ERA object, at specified x, y locations and
 years. Must be given a starting year of the dataset.
 """
-function extractvalues(tab::Union{IndexedTable, DIndexedTable}, era::ERA, varname::Symbol)
+function extractvalues(tab::Union{NextTable, DNextTable}, era::ERA, varname::Symbol)
     vals = map(t -> extractvalues(t.decimallatitude * °, t.decimallongitude * °, t.year, era), tab)
     tab = pushcol(tab, varname, vals)
     return tab
@@ -154,7 +152,7 @@ function extractvalues(x::Vector{typeof(1.0°)},y::Vector{typeof(1.0°)},
         end
     end
 end
-function extractvalues(tab::Union{IndexedTable, DIndexedTable}, ref::Reference, varname::Symbol)
+function extractvalues(tab::Union{NextTable, DNextTable}, ref::Reference, varname::Symbol)
     vals = map(t -> extractvalues(t.decimallatitude * °, t.decimallongitude * °, ref), tab)
     tab = pushcol(tab, varname, vals)
     return tab

@@ -9,3 +9,6 @@ save(gbif, "Geo_GBIF")
 ref = create_reference(0.75)
 gbif = extractvalues(gbif, ref, :refid)
 save(gbif, "Era_GBIF")
+
+gardens = loadtable("gardens.csv")
+centroids = loadtable("Centroids.csv")
