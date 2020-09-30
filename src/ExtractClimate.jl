@@ -103,7 +103,7 @@ end
 Function to extract values from an ERA object, at specified x, y locations and
 years. Must be given a starting year of the dataset.
 """
-function extractvalues(tab::Union{JuliaDB.NextTable, JuliaDB.DNextTable}, era::ERA, varname::Symbol)
+function extractvalues(tab::Union{JuliaDB.IndexedTable, JuliaDB.DIndexedTable}, era::ERA, varname::Symbol)
     vals = map(t -> extractvalues(t.decimallatitude * °, t.decimallongitude * °, t.year, era), tab)
     tab = pushcol(tab, varname, vals)
     return tab
@@ -152,7 +152,7 @@ function extractvalues(x::Vector{typeof(1.0°)},y::Vector{typeof(1.0°)},
         end
     end
 end
-function extractvalues(tab::Union{JuliaDB.NextTable, JuliaDB.DNextTable}, ref::Reference, varname::Symbol)
+function extractvalues(tab::Union{JuliaDB.IndexedTable, JuliaDB.DIndexedTable}, ref::Reference, varname::Symbol)
     vals = map(t -> extractvalues(t.decimallatitude * °, t.decimallongitude * °, ref), tab)
     tab = pushcol(tab, varname, vals)
     return tab

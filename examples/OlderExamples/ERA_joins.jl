@@ -48,7 +48,7 @@ gbif = load("GBIF/Small_GBIF")
 era = load("ECMWF/era_int")
 era = distribute(era, 1)
 
-function era_gbif_join(era::JuliaDB.DNextTable, gbif::JuliaDB.DNextTable, i::Int64)
+function era_gbif_join(era::JuliaDB.DIndexedTable, gbif::JuliaDB.DIndexedTable, i::Int64)
     date_var = Symbol("date$i")
     bif = renamecol(gbif, colnames(gbif)[3] => date_var)
     gbif_era = join(bif, era, how = :inner, lkey = (:refval, date_var), rkey = (:refval, date_var), rselect = (:year, :refval, :x, :y, :month, :ssr, :stl1, :t2m, :tp, date_var))
@@ -57,7 +57,7 @@ function era_gbif_join(era::JuliaDB.DNextTable, gbif::JuliaDB.DNextTable, i::Int
     return gbif_era
 end
 
-function era_gbif_join(era::JuliaDB.DNextTable, gbif::JuliaDB.DNextTable, filename::String)
+function era_gbif_join(era::JuliaDB.DIndexedTable, gbif::JuliaDB.DIndexedTable, filename::String)
     for i in 0:11
         if isfile(filename)
             gbif_era = load(filename)
@@ -72,7 +72,7 @@ function era_gbif_join(era::JuliaDB.DNextTable, gbif::JuliaDB.DNextTable, filena
     end
 end
 
-function era_gbif_join(era::JuliaDB.DNextTable, gbif::JuliaDB.DNextTable, filename::String)
+function era_gbif_join(era::JuliaDB.DIndexedTable, gbif::JuliaDB.DIndexedTable, filename::String)
     for i in 0:11
         gbif_era = era_gbif_join(era, gbif, i)
         save(gbif_era, filename * "_$i")

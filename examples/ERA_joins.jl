@@ -45,14 +45,14 @@ gbif = load("GBIF/Small_GBIF")
 era = load("ECMWF/era_int")
 era = distribute(era, 1)
 
-function era_gbif_join(era::JuliaDB.DNextTable, gbif::JuliaDB.DNextTable, date_var::Symbol)
+function era_gbif_join(era::JuliaDB.DIndexedTable, gbif::JuliaDB.DIndexedTable, date_var::Symbol)
     bif = renamecol(gbif, colnames(gbif)[3] => date_var)
     gbif_era = join(bif, era, how = :inner, lkey = (:refval, date_var), rkey = (:refval, date_var), rselect = (:year, :refval, :x, :y, :month, :ssr, :stl1, :t2m, :tp, date_var))
     gbif_era = renamecol(gbif_era, date_var, :date)
     return gbif_era
 end
 
-function era_gbif_join(era::JuliaDB.DNextTable, gbif::JuliaDB.DNextTable)
+function era_gbif_join(era::JuliaDB.DIndexedTable, gbif::JuliaDB.DIndexedTable)
     gbif_era = era_gbif_join(era, gbif, :date0)
     for i in 1:11
         new_join = era_gbif_join(era, gbif, Symbol("date$i"))
