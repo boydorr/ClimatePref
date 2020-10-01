@@ -63,6 +63,32 @@ function gardenmask(occ::IndexedTable, gard::IndexedTable,
     occ = popcol(occ, :refval)
     return occ
 end
+
+"""
+    gardenmask(occ::IndexedTables.NextTable, gard::IndexedTables.NextTable,
+     masksize::Float64)
+
+Function to mask botanic garden locations found in `gard` from occurrence
+records found in `occ`, with an optional size for the mask, `masksize`.
+"""
+function mask(occ::DIndexedTable, mask::DIndexedTable,
+     masksize::Float64)
+    (:Latitude in colnames(occ)) || error("Latitude column should be named :Latitude")
+    (:Longitude in colnames(occ)) || error("Latitude column should be named :Longitude")
+    coords = hcat(select(mask, :Latitude), select(mask, :Longitude))
+    ref = create_reference(masksize)
+
+    # Add in refval column to garden info of which reference grid square it falls in
+    mask = pushcol(mask, :refval, extractvalues(coords[:, 2] * °, coords[:, 1] * °, ref))
+
+    coords_occ = hcat(select(occ, :decimallatitude), select(occ, :decimallongitude))
+    occ = pushcol(occ, :refval, extractvalues(coords_occ[:, 2] * °, coords_occ[:, 1] * °, ref))
+    # Use anti-join to filter out those that have the same reference value
+    occ = join(occ, gard, how=:anti, lkey=:refval, rkey =:refval)
+    occ = popcol(occ, :refval)
+    return occ
+end
+
 """
     genus_clean(genus::IndexedTables.NextTable)
 
