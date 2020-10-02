@@ -74,8 +74,8 @@ records found in `occ`, with an optional size for the mask, `masksize`.
 """
 function mask(occ::DIndexedTable, mask::DIndexedTable,
      masksize::Float64)
-    (:Latitude in colnames(occ)) || error("Latitude column should be named :Latitude")
-    (:Longitude in colnames(occ)) || error("Latitude column should be named :Longitude")
+    (:Latitude in colnames(mask)) || error("Latitude column should be named :Latitude")
+    (:Longitude in colnames(mask)) || error("Latitude column should be named :Longitude")
     coords = hcat(select(mask, :Latitude), select(mask, :Longitude))
     ref = create_reference(masksize)
 
