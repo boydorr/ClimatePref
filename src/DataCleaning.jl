@@ -65,10 +65,10 @@ function gardenmask(occ::IndexedTable, gard::IndexedTable,
 end
 
 """
-    gardenmask(occ::IndexedTables.NextTable, gard::IndexedTables.NextTable,
+    mask(occ::IndexedTables.NextTable, mask::IndexedTables.NextTable,
      masksize::Float64)
 
-Function to mask botanic garden locations found in `gard` from occurrence
+Function to mask locations found in `mask` from occurrence
 records found in `occ`, with an optional size for the mask, `masksize`.
 """
 function mask(occ::DIndexedTable, mask::DIndexedTable,

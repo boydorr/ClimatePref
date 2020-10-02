@@ -66,7 +66,7 @@ export extractvalues
 
 include("DataCleaning.jl")
 export create_reference, gardenmask, genus_worldclim_average,
-    genus_worldclim_monthly, upresolution, downresolution
+    genus_worldclim_monthly, upresolution, downresolution, mask
 
 include("Conversion.jl")
 export worldclim_to_DB, era_to_DB, CHELSA_to_DB
