@@ -4,6 +4,7 @@ using Unitful.DefaultSymbols
 using Plots
 using Statistics
 
+import JuliaDB: IndexedTable, DIndexedTable
 """
     convert_coords(i::Int64, width::Int64)
     convert_coords(x::Int64, y::Int64, width::Int64)
