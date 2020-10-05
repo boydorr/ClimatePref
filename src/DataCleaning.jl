@@ -85,7 +85,7 @@ function mask(occ::DIndexedTable, mask::DIndexedTable,
     coords_occ = hcat(collect(select(occ, :decimallatitude)), collect(select(occ, :decimallongitude)))
     occ = pushcol(occ, :refval, extractvalues(coords_occ[:, 2] * °, coords_occ[:, 1] * °, ref))
     # Use anti-join to filter out those that have the same reference value
-    occ = join(occ, gard, how=:anti, lkey=:refval, rkey =:refval)
+    occ = join(occ, mask, how=:anti, lkey=:refval, rkey =:refval)
     occ = popcol(occ, :refval)
     return occ
 end
