@@ -76,13 +76,13 @@ function mask(occ::DIndexedTable, mask::DIndexedTable,
      masksize::Float64)
     (:Latitude in colnames(mask)) || error("Latitude column should be named :Latitude")
     (:Longitude in colnames(mask)) || error("Latitude column should be named :Longitude")
-    coords = hcat(select(mask, :Latitude), select(mask, :Longitude))
+    coords = hcat(collect(select(mask, :Latitude)), collect(select(mask, :Longitude)))
     ref = create_reference(masksize)
 
     # Add in refval column to garden info of which reference grid square it falls in
     mask = pushcol(mask, :refval, extractvalues(coords[:, 2] * °, coords[:, 1] * °, ref))
 
-    coords_occ = hcat(select(occ, :decimallatitude), select(occ, :decimallongitude))
+    coords_occ = hcat(collect(select(occ, :decimallatitude)), collect(select(occ, :decimallongitude)))
     occ = pushcol(occ, :refval, extractvalues(coords_occ[:, 2] * °, coords_occ[:, 1] * °, ref))
     # Use anti-join to filter out those that have the same reference value
     occ = join(occ, gard, how=:anti, lkey=:refval, rkey =:refval)
