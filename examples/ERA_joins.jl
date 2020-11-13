@@ -1,11 +1,18 @@
+# Join GBIF to ERA data
 using JuliaDB
 using ClimatePref
 using Unitful
 using ClimatePref.Units
+using Unitful.DefaultSymbols
 
-# Load GBIF and add in unique ID column
-gbif = load("GBIF_TPL")
+# Load GBIF and add in unique record ID and Species ID column
+gbif = load("../../Documents/gbif/full_data/GBIF_filtered")
 gbif = pushcol(gbif, :UID, 1:length(gbif))
+spplist = collect(select(gbif, :species))
+uniquespp = sort(unique(spplist))
+sppdict = Dict(zip(uniquespp, collect(1:length(uniquespp))))
+sppids = [sppdict[sp] for sp in spplist]
+gbif = pushcol(gbif, :SppID, sppids)
 
 # Create date column
 mth = collect(select(gbif, :month))
@@ -21,7 +28,8 @@ ref = create_reference(0.75)
 refval = extractvalues(lon .* °, lat .* °, ref)
 gbif = pushcol(gbif, :refval, refval)
 small_gbif = select(gbif, (:UID, :SppID, :date, :refval))
-save(small_gbif, "Small_GBIF")
+small_gbif = reindex(small_gbif, (:refval, :date))
+save(small_gbif, "Small_GBIF_new")
 
 # Import era data and refine
 era = load("ECMWF/era_int_all")

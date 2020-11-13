@@ -1,6 +1,6 @@
+# 1. Clean GBIF ready for joining with The Plant List
 using ClimatePref
 using JuliaDB
-using JuliaDBMeta
 
 # Load and save GBIF in between runs to save on disk space
 
@@ -15,14 +15,7 @@ save(gbif, "Geo_GBIF_new")
 # Extract grid info for each record (used to match to ERA data later)
 ref = create_reference(0.75)
 gbif = extractvalues(gbif, ref, :refid)
+# Filter for blank species and reindex for faster joins
+gbif = filter(g -> g.species != "", gbif)
+gbif = reindex(gbif, :species)
 save(gbif, "Era_GBIF_new")
-
-# Load info on gardens and country centroids
-gardens = loadtable("gardens.csv", chunks = 1)
-centroids = loadtable("Centroids.csv", chunks = 1)
-centroids = @transform centroids {Latitude = :y, Longitude = :x}
-
-# Filter them out
-gbif = mask(gbif, gardens, 0.02)
-gbif = mask(gbif, centroids, 0.02)
-save(gbif, "GBIF_mask_new")
