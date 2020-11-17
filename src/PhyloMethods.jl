@@ -94,7 +94,11 @@ function fitMissings(tree::HybridNetwork, dat::DataFrame, climate_var::Symbol, s
     return traits
 end
 
+"""
+    rawData(gbif::JuliaDB.DIndexedTable, spp_dict::Dict, continent::Int64, filter_names::Vector{String})
 
+    Ready raw data (no adjustments) for Lambda models.
+"""
 function rawData(gbif::JuliaDB.DIndexedTable, spp_dict::Dict, continent::Int64, filter_names::Vector{String})
     # Filter for continent
     gbif = filter(g->g.continent == continent, gbif)
@@ -115,6 +119,11 @@ function rawData(gbif::JuliaDB.DIndexedTable, spp_dict::Dict, continent::Int64, 
     return phylo_traits_filter
 end
 
+"""
+    adjustData(gbif::JuliaDB.DIndexedTable,  spp_dict::Dict, continent::Int64, filter_names::Vector{String}, adjustment::Array{Float64, 2}, mins, maxs)
+
+    Ready adjusted data (EVI or EVI/climate) for Lambda models.
+"""
 function adjustData(gbif::JuliaDB.DIndexedTable,  spp_dict::Dict, continent::Int64, filter_names::Vector{String}, adjustment::Array{Float64, 2}, mins, maxs)
     # Filter for continent
     gbif = filter(g->g.continent == continent, gbif)
