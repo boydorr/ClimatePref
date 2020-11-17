@@ -4,7 +4,6 @@ using DataFrames
 using StatsBase
 using Statistics
 using Unitful
-using MyUnitful
 using Random
 using JuliaDB
 using JuliaDBMeta

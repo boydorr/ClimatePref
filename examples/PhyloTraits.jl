@@ -3,7 +3,8 @@ using GLM
 using JuliaDB
 using JuliaDBMeta
 using Unitful
-using MyUnitful
+using ClimatePref
+using ClimatePref.Unitful
 using StatsBase
 using JLD
 using OnlineStats

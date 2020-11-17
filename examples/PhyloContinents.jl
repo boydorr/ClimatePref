@@ -4,8 +4,8 @@ using JuliaDBMeta
 using Unitful
 using Unitful.DefaultSymbols
 using PhyloNetworks
-using MyUnitful
 using ClimatePref
+using ClimatePref.Unitful
 using Simulation
 using StatsBase
 using JLD
