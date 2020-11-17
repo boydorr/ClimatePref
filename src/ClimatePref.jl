@@ -77,4 +77,7 @@ export getprofile
 include("PhyloModels.jl")
 export Brownian, Lambda, fitBrownian, fitLambda, varcovar
 
+include("PhyloMethods.jl")
+export adjust, adjust_percentile, fitLambdas, fitMissings, rawData, adjustData, extractContinents
+
 end

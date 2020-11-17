@@ -80,6 +80,10 @@ sppdict = Dict(zip(uniquespp, collect(1:length(uniquespp))))
 sppids = [sppdict[sp] for sp in spplist]
 gbif = pushcol(gbif, :SppID, sppids)
 
+# Save reversal of species dict for later analyses
+sppdict = Dict(zip(collect(1:length(uniquespp)), uniquespp))
+JLD.save("Species_names.jld", "spp_names", sppdict)
+
 # Create date column
 mth = collect(select(gbif, :month))
 yr = collect(select(gbif, :year))

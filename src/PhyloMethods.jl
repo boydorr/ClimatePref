@@ -115,7 +115,7 @@ function rawData(gbif::JuliaDB.DIndexedTable, spp_dict::Dict, continent::Int64, 
     return phylo_traits_filter
 end
 
-function adjustData1(gbif::JuliaDB.DIndexedTable,  spp_dict::Dict, continent::Int64, filter_names::Vector{String}, adjustment::Array{Float64, 2}, mins, maxs)
+function adjustData(gbif::JuliaDB.DIndexedTable,  spp_dict::Dict, continent::Int64, filter_names::Vector{String}, adjustment::Array{Float64, 2}, mins, maxs)
     # Filter for continent
     gbif = filter(g->g.continent == continent, gbif)
 

@@ -13,3 +13,4 @@ save(gbif_tpl, "GBIF_TPL_new")
 
 # If joins take up too much space on device - this is an alternative option using filter
 gbif = filter(g -> g.species in specieslist, gbif)
+save(gbif_tpl, "GBIF_TPL_new")

@@ -20,12 +20,12 @@ tipnames = tipLabels(tree)
 tip_names = join.(split.(tipnames, "_"), " ")
 
 # Load GBIF data
-gbif = JuliaDB.load("GBIF_JOIN/CERA_JOIN_SIMPLE")
+gbif = JuliaDB.load("CERA_JOIN_SIMPLE")
 spp = collect(JuliaDB.select(gbif, :SppID))
 numspp = unique(spp)
 
 # Load Species names
-spp_names = JLD.load("GBIF_JOIN/Species_names.jld", "spp_names")
+spp_names = JLD.load("Species_names.jld", "spp_names")
 
 # Get top 5000 most common species
 cross_species = spp_names ∩ tip_names
