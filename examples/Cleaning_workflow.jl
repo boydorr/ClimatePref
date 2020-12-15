@@ -82,7 +82,7 @@ gbif = pushcol(gbif, :SppID, sppids)
 
 # Save reversal of species dict for later analyses
 sppdict = Dict(zip(collect(1:length(uniquespp)), uniquespp))
-JLD.save("Species_names.jld", "spp_names", sppdict)
+JLD.save("Species_names.jld", "spp_names", uniquespp, "spp_ids", collect(1:length(uniquespp)))
 
 # Create date column
 mth = collect(select(gbif, :month))

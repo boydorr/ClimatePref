@@ -14,6 +14,7 @@ using DataFrames
 @everywhere using Unitful
 @everywhere using Unitful.DefaultSymbols
 @everywhere using OnlineStats
+@everywhere using StatsBase
 
 # Load tree
 tree = readTopology("Qian2016.tree")
@@ -27,15 +28,19 @@ numspp = unique(spp)
 
 # Load Species names
 spp_names = JLD.load("Species_names.jld", "spp_names")
+spp_ids = JLD.load("Species_names.jld", "spp_ids")
+sppdict = Dict(zip(spp_ids, spp_names))
+iddict = Dict(zip(spp_names, spp_ids))
+spp_names = [sppdict[i] for i in numspp]
 
 # Get top 5000 most common species
 cross_species = spp_names ∩ tip_names
-cross_ids = numspp[indexin(cross_species, spp_names)]
+cross_ids = [iddict[i] for i in cross_species]
 sorted_counts = countmap(spp)
-sorted_counts = filter((k, v) -> k in cross_ids, sorted_counts)
+sorted_counts = filter(kv -> kv.first in cross_ids, sorted_counts)
 sorted_counts = sort(sorted_counts, byvalue=true, rev=true)
 top_common_ids = collect(keys(sorted_counts))[1:5000]
-top_common_names = spp_names[indexin(top_common_ids, numspp)]
+top_common_names = [sppdict[i] for i in top_common_ids]
 #JLD.save("Common_species_names.jld", "spp_names", top_common_names)
 #p = bar(collect(values(sorted_counts))[1:5000], grid = false)
 #png(p, "GBIF_counts.png")
@@ -53,10 +58,10 @@ end
 phylo_traits = @groupby gbif_fil :SppID {tmin = mean(ustrip(:tmin)), tmin10 = percentile(ustrip(:tmin), 10), tmax = mean(ustrip(:tmax)), tmax90 = percentile(ustrip(:tmax), 90), tmean = mean(ustrip(:tmean)), trng = mean(ustrip(:trng)), stl1 = mean(ustrip(:stl1mean)), stl2 = mean(ustrip(:stl2mean)), stl3 = mean(ustrip(:stl3mean)), stl4 = mean(ustrip(:stl4mean)), swvl1 = mean(ustrip(:swvl1mean)), swvl2 = mean(ustrip(:swvl2mean)), swvl3 = mean(ustrip(:swvl3mean)), swvl4 = mean(ustrip(:swvl4mean)), ssr = mean(ustrip(:ssrmean)), tp = mean(ustrip(:tpmean))}
 
 # Add in tip names to data and save
-trait_ids = collect(select(phylo_traits, :SppID))
-new_cross_species = cross_species[indexin(trait_ids, cross_ids)]
+trait_ids = collect(JuliaDB.select(phylo_traits, :SppID))
+new_cross_species = [sppdict[i] for i in trait_ids]
 phylo_traits = pushcol(phylo_traits, :tipNames, join.(split.(new_cross_species, " "), "_"))
-save(phylo_traits, "Phylo_traits")
+JuliaDB.save(phylo_traits, "Phylo_traits_new")
 
 # Filter for common species
 phylo_traits_filter = filter(p -> p.tipNames in join.(split.(top_common_names, " "), "_"), phylo_traits)
@@ -88,7 +93,7 @@ phylo_traits_adj = @groupby gbif_fil :SppID {tmin = adjust(uconvert.(K, :tmin), 
 
 # Add tip names and save data
 trait_ids = collect(JuliaDB.select(phylo_traits_adj, :SppID))
-new_cross_species = cross_species[indexin(trait_ids, cross_ids)]
+new_cross_species = [sppdict[i] for i in trait_ids]
 phylo_traits_adj = pushcol(phylo_traits_adj, :tipNames, join.(split.(new_cross_species, " "), "_"))
 JuliaDB.save(phylo_traits_adj, "Phylo_traits_adjust")
 
@@ -99,7 +104,7 @@ phylo_traits_filter = filter(p -> p.tipNames in join.(split.(top_common_names, "
 dat = DataFrame(collect(phylo_traits_filter))
 
 # Fit lambda models and save
-lambdas = Chapter4.fitLambdas(tree, dat, names(dat)[2:end-1])
+lambdas = fitLambdas(tree, dat, names(dat)[2:end-1])
 JLD.save("Lambdas_EVI_adjust.jld", "lambdas", lambdas)
 
 
