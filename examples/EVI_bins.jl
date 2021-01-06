@@ -78,7 +78,7 @@ JLD.save("Total_evi_counts.jld", "total", total_evi_counts)
 ## Join cera and evi data with continents and filter missing values
 cera_simple = JuliaDB.load("CERA_simple")
 continents = JuliaDB.load("Continents")
-evi_tab = JuliaDB.load("GBIF_JOIN/EVI")
+evi_tab = JuliaDB.load("EVI")
 evi_cont = join(evi_tab, continents, how = :inner, lkey = :refval, rkey = :refval)
 evi_cont = filter(e -> !ismissing(e.continent), evi_cont)
 continents = distribute(continents, 1)
@@ -110,4 +110,4 @@ function mapContinents!(cera::JuliaDB.DIndexedTable, evi::JuliaDB.IndexedTable, 
         print(cont)
     end
 end
-mapContinents!(cera_cont, evi_cont, collect(1:6))
+mapContinents!(cera_cont, evi_cont, collect(1:6), mins, maxs)

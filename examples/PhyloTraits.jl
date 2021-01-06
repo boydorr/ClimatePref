@@ -134,7 +134,7 @@ phylo_traits_filter = filter(p -> p.tipNames in join.(split.(top_common_names, "
 dat = DataFrame(collect(phylo_traits_filter))
 
 # Fit lambda models and save
-lambdas = Chapter4.fitLambdas(tree, dat, names(dat)[2:end-1])
+lambdas = fitLambdas(tree, dat, names(dat)[2:end-1])
 JLD.save("Lambdas_temp_adjust.jld", "lambdas", lambdas)
 
 
@@ -259,11 +259,11 @@ dat2 = DataFrame(collect(phylo_traits_tmax))
 dat3 = DataFrame(collect(phylo_traits_tp))
 
 # Fit lambda models and save
-lambdas = Chapter4.fitLambdas(tree, dat1, names(dat1)[2:end-1])
+lambdas = fitLambdas(tree, dat1, names(dat1)[2:end-1])
 JLD.save("Lambdas_percentiles_tmin.jld", "lambdas", lambdas)
 
-lambdas = Chapter4.fitLambdas(tree, dat2, names(dat2)[2:end-1])
+lambdas = fitLambdas(tree, dat2, names(dat2)[2:end-1])
 JLD.save("Lambdas_percentiles_tmax.jld", "lambdas", lambdas)
 
-lambdas = Chapter4.fitLambdas(tree, dat3, names(dat3)[2:end-1])
+lambdas = fitLambdas(tree, dat3, names(dat3)[2:end-1])
 JLD.save("Lambdas_percentiles_tp.jld", "lambdas", lambdas)

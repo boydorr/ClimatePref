@@ -29,6 +29,7 @@ total_gbif_counts = [bin(gbif, vars[i], mins[i], maxs[i]) for i in eachindex(var
 total_gbif_counts = hcat(total_gbif_counts...)
 JLD.save("Total_gbif_counts.jld", "total", total_gbif_counts)
 
+# Bin data per continent
 gbif = JuliaDB.load("CERA_JOIN_SIMPLE")
 continents = JuliaDB.load("Continents")
 continents = distribute(continents, 1)

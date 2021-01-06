@@ -15,7 +15,7 @@ mins = [197.0K, 197.0K, 197.0K, 0K, 197.0K, 197.0K, 197.0K, 197.0K, 0.0m^3, 0.0m
 maxs = [320.0K, 320.0K, 320.0K, 80K, 320.0K, 320.0K, 320.0K, 320.0K, 1.0m^3, 1.0m^3, 1.0m^3, 1.0m^3, 3.0e7J/m^2, 0.1m]
 
 # Read in tip data and tree
-phylo_traits = JuliaDB.load("Phylo_traits")
+phylo_traits = JuliaDB.load("Phylo_traits_new")
 tree = readTopology("Qian2016.tree")
 
 # Cut tree down to common species
@@ -51,9 +51,10 @@ JLD.save("AncRecon_raw.jld", "traits", recon_dat)
 recon_dat = JLD.load("AncRecon_raw.jld", "traits")
 anc_corr_raw = [cor(recon_dat[c], dat[c]) for c in climate_vars]
 JLD.save("Corr_raw.jld", "corr", anc_corr_raw)
+
 # Randomise tips and fit again
 
-recon = map(climate_var -> Chapter4.fitMissings(tree, dat, climate_var, true), climate_vars)
+recon = map(climate_var -> fitMissings(tree, dat, climate_var, true), climate_vars)
 recon_mat = Array{Union{Float64, Missing}}(undef, 5000, length(recon))
 for i in 1:length(recon)
     recon_mat[:, i] .= recon[i]
@@ -110,7 +111,7 @@ JLD.save("Corr_adjust.jld", "corr", anc_corr_adjust)
 
 # Randomise tips and fit again
 
-recon = map(climate_var -> Chapter4.fitMissings(tree, dat, climate_var, true), climate_vars)
+recon = map(climate_var -> fitMissings(tree, dat, climate_var, true), climate_vars)
 recon_mat = Array{Union{Float64, Missing}}(undef, 5000, length(recon))
 for i in 1:length(recon)
     recon_mat[:, i] .= recon[i]
@@ -167,7 +168,7 @@ JLD.save("Corr_adjust2.jld", "corr", anc_corr_adjust2)
 
 # Randomise tips and fit again
 
-recon = map(climate_var -> Chapter4.fitMissings(tree, dat, climate_var, true), climate_vars)
+recon = map(climate_var -> fitMissings(tree, dat, climate_var, true), climate_vars)
 recon_mat = Array{Union{Float64, Missing}}(undef, 5000, length(recon))
 for i in 1:length(recon)
     recon_mat[:, i] .= recon[i]

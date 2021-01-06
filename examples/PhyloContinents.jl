@@ -6,13 +6,11 @@ using Unitful.DefaultSymbols
 using PhyloNetworks
 using ClimatePref
 using ClimatePref.Unitful
-using Simulation
 using StatsBase
 using JLD
 using JLD2
 using DataFrames
-#include("GIT/Chapter4/src/Chapter4.jl")
-#using .Chapter4
+
 # Load tree
 tree = readTopology("Qian2016.tree")
 tipnames = tipLabels(tree)
@@ -23,24 +21,25 @@ spp = collect(JuliaDB.select(gbif, :SppID))
 numspp = unique(spp)
 
 # Extracting continent values
-# R"library(raster); library(rgdal)
-# continent <- readOGR(shapefolder, shapefile)
-# ext <- extent(-180, 180, -90, 90)
-# r <- raster(ext, resolution= c(360/481, 180/241))
-# cont_raster <- rasterize(continent, r)
-# cont_mat = getValues(cont_raster)
-# x = coordinates(cont_raster)[, 1]
-# y = coordinates(cont_raster)[, 2]
-# "
-# @rget cont_mat
-# @rget x
-# @rget y
-# cont_tab = table(x, y, cont_mat, names = (:x, :y, :continent))
-#
-# ref = create_reference(0.75)
-# refval = extractvalues(x .* °, y .* °, ref)
-# cont_tab = pushcol(cont_tab, :refval, refval)
-# save(cont_tab, "Continents")
+R"library(raster); library(rgdal)
+shapefolder <- 'Continent'; shapefile <- 'Continent_crop'
+continent <- readOGR(shapefolder, shapefile)
+ext <- extent(-180, 180, -90, 90)
+r <- raster(ext, resolution= c(360/481, 180/241))
+cont_raster <- rasterize(continent, r)
+cont_mat = getValues(cont_raster)
+x = coordinates(cont_raster)[, 1]
+y = coordinates(cont_raster)[, 2]
+"
+@rget cont_mat
+@rget x
+@rget y
+cont_tab = table(x, y, cont_mat, names = (:x, :y, :continent))
+
+ref = create_reference(0.75)
+refval = extractvalues(x .* °, y .* °, ref)
+cont_tab = pushcol(cont_tab, :refval, refval)
+JuliaDB.save(cont_tab, "Continents")
 
 # Join GBIF with Continents
 
@@ -150,7 +149,7 @@ function fitAdjust(gbif::JuliaDB.DIndexedTable, tree::HybridNetwork, continents:
     total_dat1 = @groupby total_dat :SppID {tmin = countmean(weightmean(:tmin, :samp_size), mins[1], maxs[1]), tmax = countmean(weightmean(:tmax, :samp_size), mins[2], maxs[2]), tmean = countmean(weightmean(:tmean, :samp_size), mins[3], maxs[3]), trng = countmean(weightmean(:trng, :samp_size), mins[4], maxs[4]), stl1 = countmean(weightmean(:stl1, :samp_size), mins[5], maxs[5]), stl2 = countmean(weightmean(:stl2, :samp_size), mins[6], maxs[6]), stl3 = countmean(weightmean(:stl3, :samp_size), mins[7], maxs[7]), stl4 = countmean(weightmean(:stl4, :samp_size), mins[8], maxs[8]), swvl1 = countmean(weightmean(:swvl1, :samp_size), mins[9], maxs[9]), swvl2 = countmean(weightmean(:swvl2, :samp_size), mins[10], maxs[10]), swvl3 = countmean(weightmean(:swvl3, :samp_size), mins[11], maxs[11]), swvl4 = countmean(weightmean(:swvl4, :samp_size), mins[12], maxs[12]), tp = countmean(weightmean(:tp, :samp_size), mins[13], maxs[13]), ssr = countmean(weightmean(:ssr, :samp_size), mins[14], maxs[14]), tipNames = first(:tipNames)}
     total_dat1 = DataFrame(collect(total_dat1))
     total_dat1[:tipNames] = collect(total_dat1[:tipNames])
-    return total_dat
+    return total_dat1
 end
 
 dat1 = fitAdjust(gbif_fil, tree, collect(1:6), spp_dict, top_common_names, mins, maxs, raw = true)

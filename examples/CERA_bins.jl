@@ -28,7 +28,7 @@ total_cera_counts = [bin(cera_simple, vars[i], mins[i], maxs[i]) for i in eachin
 total_cera_counts = hcat(total_cera_counts...)
 JLD.save("Total_cera_counts.jld", "total", total_cera_counts)
 
-
+# Bin data per continent
 cera_simple = JuliaDB.load("CERA_simple")
 continents = JuliaDB.load("Continents")
 continents = distribute(continents, 1)
