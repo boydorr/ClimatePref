@@ -12,14 +12,11 @@ using JLD
 using JLD2
 using DataFrames
 
-cd("/home/claireh/Documents")
-
-
 tree = readTopology("Qian2016.tree")
 tipnames = tipLabels(tree)
 tip_names = join.(split.(tipnames, "_"), " ")
 # Load GBIF data
-gbif =  JuliaDB.load("GBIF_JOIN/CERA_JOIN_SIMPLE")
+gbif =  JuliaDB.load("CERA_JOIN_SIMPLE")
 spp = collect(JuliaDB.select(gbif, :SppID))
 numspp = unique(spp)
 
@@ -30,12 +27,15 @@ gbif_cont = filter(c -> !ismissing(c.continent), gbif_cont)
 
 
 # Load Species names
-spp_names = JLD.load("GBIF_JOIN/Species_names.jld", "spp_names")
-
+spp_names = JLD.load("Species_names.jld", "spp_names")
+spp_ids = JLD.load("Species_names.jld", "spp_ids")
+sppdict = Dict(zip(spp_ids, spp_names))
+iddict = Dict(zip(spp_names, spp_ids))
+spp_names = [sppdict[i] for i in numspp]
 
 # Get top 5000 most common species
 cross_species = spp_names ∩ tip_names
-cross_ids = numspp[indexin(cross_species, spp_names)]
+cross_ids = [iddict[i] for i in cross_species]
 gbif_fil = filter(g->g.SppID in cross_ids, gbif_cont)
 
 top_common_names = JLD.load("Common_species_names.jld", "spp_names")

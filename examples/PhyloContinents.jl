@@ -51,11 +51,14 @@ gbif_cont = filter(c -> !ismissing(c.continent), gbif_cont)
 
 # Load Species names
 spp_names = JLD.load("Species_names.jld", "spp_names")
-
+spp_ids = JLD.load("Species_names.jld", "spp_ids")
+sppdict = Dict(zip(spp_ids, spp_names))
+iddict = Dict(zip(spp_names, spp_ids))
+spp_names = [sppdict[i] for i in numspp]
 
 # Get top 5000 most common species
 cross_species = spp_names ∩ tip_names
-cross_ids = numspp[indexin(cross_species, spp_names)]
+cross_ids = [iddict[i] for i in cross_species]
 gbif_fil = filter(g->g.SppID in cross_ids, gbif_cont)
 
 top_common_names = JLD.load("Common_species_names.jld", "spp_names")
@@ -78,7 +81,7 @@ maxs = [320.0K, 320.0K, 320.0K, 80K, 320.0K, 320.0K, 320.0K, 320.0K, 1.0m^3, 1.0
     return counts
 end
 
-function adjustData1(gbif::JuliaDB.DIndexedTable,  spp_dict::Dict, continent::Int64, filter_names::Vector{String}, adjustment::Array{Float64, 2}, mins, maxs)
+function adjustData(gbif::JuliaDB.DIndexedTable,  spp_dict::Dict, continent::Int64, filter_names::Vector{String}, adjustment::Array{Float64, 2}, mins, maxs)
     # Filter for continent
     gbif1 = filter(g->g.continent == continent, gbif_fil)
 
@@ -86,36 +89,20 @@ function adjustData1(gbif::JuliaDB.DIndexedTable,  spp_dict::Dict, continent::In
     phylo_traits = @groupby gbif1 :SppID {tmin = adjust_cont(uconvert.(K, :tmin), adjustment[:, 1], mins[1], maxs[1]),tmax = adjust_cont(uconvert.(K, :tmax), adjustment[:, 2], mins[2], maxs[2]), tmean = adjust_cont(uconvert.(K, :tmean), adjustment[:, 3], mins[3], maxs[3]), trng = adjust_cont(uconvert.(K, :trng), adjustment[:, 4], mins[4], maxs[4]), stl1 = adjust_cont(uconvert.(K, :stl1mean), adjustment[:, 5], mins[5], maxs[5]), stl2 = adjust_cont(uconvert.(K, :stl2mean), adjustment[:, 6], mins[6], maxs[6]), stl3 = adjust_cont(uconvert.(K, :stl3mean), adjustment[:, 7], mins[7], maxs[7]), stl4 = adjust_cont(uconvert.(K, :stl4mean), adjustment[:, 8], mins[8], maxs[8]), swvl1 = adjust_cont(:swvl1mean, adjustment[:, 9], mins[9], maxs[9]), swvl2 =  adjust_cont(:swvl2mean, adjustment[:, 10], mins[10], maxs[10]), swvl3 =  adjust_cont(:swvl3mean, adjustment[:, 11], mins[11], maxs[11]), swvl4 =  adjust_cont(:swvl4mean, adjustment[:, 12], mins[12], maxs[12]), ssr =  adjust_cont(:ssrmean, adjustment[:, 13], mins[13], maxs[13]), tp =  adjust_cont(:tpmean, adjustment[:, 14], mins[14], maxs[14]), samp_size = length(:refval)}
 
     # Add in tip names to data and save
-    #trait_ids = collect(JuliaDB.select(phylo_traits, :SppID))
-    #new_cross_species = [spp_dict[i] for i in trait_ids]
     phylo_traits1 = @transform phylo_traits {tipNames = join.(split.(spp_dict[:SppID], " "), "_")}
 
     # Filter for common species
     phylo_traits_filter = filter(p -> p.tipNames in join.(split.(filter_names, " "), "_"), phylo_traits1)
 
     # Convert to dataframe
-    #dat = DataFrame(collect(phylo_traits_filter))
     return phylo_traits_filter
 end
 
 
-# @everywhere include("GIT/Chapter4/src/Chapter4.jl")
-# @everywhere using .Chapter4
 @everywhere using StatsBase
 @everywhere using Unitful
 @everywhere using Unitful.DefaultSymbols
 @everywhere using OnlineStats
-# function fitRaw(gbif::JuliaDB.DIndexedTable, tree::HybridNetwork, continents::Vector{Int64}, spp_dict::Dict, top_common_names::Vector{String})
-#     total_dat = Chapter4.rawData(gbif, spp_dict, 1, top_common_names)
-#     for c in continents[2:end]
-#         dat = Chapter4.rawData(gbif, spp_dict, c, top_common_names)
-#         total_dat = merge(total_dat, dat)
-#     end
-#     total_dat = @groupby total_dat :SppID {tmin = mean(:tmin, weights(:samp_size)), tmax = mean(:tmax, weights(:samp_size)), tmean = mean(:tmean, weights(:samp_size)), trng = mean(:trng, weights(:samp_size)), stl1 = mean(:stl1, weights(:samp_size)), stl2 = mean(:stl2, weights(:samp_size)), stl3 = mean(:stl3, weights(:samp_size)), stl4 = mean(:stl4, weights(:samp_size)), swvl1 = mean(:swvl1, weights(:samp_size)), swvl2 = mean(:swvl2, weights(:samp_size)), swvl3 = mean(:swvl3, weights(:samp_size)), swvl4 = mean(:swvl4, weights(:samp_size)), tp = mean(:tp, weights(:samp_size)), ssr = mean(:ssr, weights(:samp_size)) ,tipNames = first(:tipNames)}
-#     total_dat = DataFrame(collect(total_dat))
-#     total_dat[:tipNames] = collect(total_dat[:tipNames])
-#     return total_dat
-# end
 
 @everywhere function countmean(x, min, max)
     edges = range(min, stop = max, length = 1000)
@@ -139,7 +126,7 @@ function fitAdjust(gbif::JuliaDB.DIndexedTable, tree::HybridNetwork, continents:
         if raw
             fill!(adjustment, 1)
         end
-        dat = adjustData1(gbif_fil, spp_dict, c, top_common_names, adjustment, mins, maxs)
+        dat = adjustData(gbif_fil, spp_dict, c, top_common_names, adjustment, mins, maxs)
         if length(total_dat) > 0
             total_dat = merge(total_dat, dat)
         else
