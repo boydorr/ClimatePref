@@ -20,7 +20,7 @@ function worldclim_to_DB(wc::Worldclim)
     values = wc.array[1:end]
     worldclim_tab = table(newx, newy, months, values,
         names = [:x, :y, :month, :val])
-    coords = hcat(select(worldclim_tab, :x), select(worldclim_tab, :y))
+    coords = hcat(JuliaDB.select(worldclim_tab, :x), JuliaDB.select(worldclim_tab, :y))
     ids = extractvalues(coords[:, 1], coords[:, 2], ref)
     worldclim_tab = pushcol(worldclim_tab, :refval, ids)
     return worldclim_tab
@@ -39,7 +39,7 @@ function CHELSA_to_DB(ch::CHELSA)
     values = ch.array[1:end]
     ch_tab = table(newx, newy, months, values,
         names = [:x, :y, :month, :val])
-    coords = hcat(select(ch_tab, :x), select(ch_tab, :y))
+    coords = hcat(JuliaDB.select(ch_tab, :x), JuliaDB.select(ch_tab, :y))
     ids = extractvalues(coords[:, 1], coords[:, 2], ref)
     ch_tab = pushcol(ch_tab, :refval, ids)
     return ch_tab
@@ -61,7 +61,7 @@ function era_to_DB(era::Union{CERA, ERA})
     newmonth = vcat(map(x-> x[4], expandedxy)...)
     vals = era.array[1:end]
     era_tab = table(newx * °, newy * °, newmonth .+ 1, newyr, vals, names = [:x, :y, :month, :year, :val])
-    coords = hcat(select(era_tab, :x), select(era_tab, :y))
+    coords = hcat(JuliaDB.select(era_tab, :x), JuliaDB.select(era_tab, :y))
     ids = extractvalues(coords[:, 1], coords[:, 2], ref)
     era_tab = pushcol(era_tab, :refval, ids)
     return era_tab
