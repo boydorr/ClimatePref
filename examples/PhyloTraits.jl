@@ -143,46 +143,48 @@ using JLD
 using Plots
 import Plots.px
 pyplot()
-lambdas_1 = JLD.load("data/Lambdas_common.jld", "lambdas")
-lambdas_2 = JLD.load("data/Lambdas_EVI_adjust.jld", "lambdas")
-lambdas_3 = JLD.load("data/Lambdas_temp_adjust.jld", "lambdas")
+lambdas_1 = JLD.load("Lambdas_common.jld", "lambdas")
+lambdas_2 = JLD.load("Lambdas_EVI_adjust.jld", "lambdas")
+lambdas_3 = JLD.load("Lambdas_temp_adjust.jld", "lambdas")
 subset = [[1,3, 5]; collect(7:16)]
 subset2 = [collect(1:3); collect(5:14)]
 x = ["Raw", "Effort", "Effort + \n Climate"]
 y = ["tmin", "tmax", "tmean", "stl1", "stl2", "stl3", "stl4", "swvl1", "swvl2", "swvl3", "swvl4", "ssr", "tp"]
 lambdas = hcat(lambdas_1[subset], lambdas_2[subset2], lambdas_3[subset2])
 heatmap(y, x, transpose(lambdas), seriescolor = :Blues, colorbar = :legend, legend = :top, size = (900, 200), guidefontsize = 12, tickfontsize = 12, xrotation = 90, clim = (0, 1), colorbar_title = "λ")
-Plots.pdf("plots/Lambda_heatmap.pdf")
+Plots.pdf("Lambda_heatmap.pdf")
 
 
-lambdas_1 = JLD.load("data/Lambdas_raw_continent.jld", "lambdas")
-lambdas_2 = JLD.load("data/Lambdas_effort_continent.jld", "lambdas")
-lambdas_3 = JLD.load("data/Lambdas_climate_continent.jld", "lambdas")
+lambdas_1 = JLD.load("Lambdas_raw_continent.jld", "lambdas")
+lambdas_2 = JLD.load("Lambdas_effort_continent.jld", "lambdas")
+lambdas_3 = JLD.load("Lambdas_climate_continent.jld", "lambdas")
 subset = [collect(1:3); collect(5:14)]
 x = ["Raw", "Effort", "Effort + Climate"]
 y = ["tmin", "tmax", "tmean", "stl1", "stl2", "stl3", "stl4", "swvl1", "swvl2", "swvl3", "swvl4", "ssr", "tp"]
 lambdas = hcat(lambdas_1[subset], lambdas_2[subset], lambdas_3[subset])
 heatmap(x, y, lambdas, seriescolor = :Blues, clim = (0, 1), guidefontsize =10, tickfontsize=10, size = (500, 500), top_margin = 20px, bottom_margin = 20px, colorbar_title = "λ")
-Plots.pdf("plots/Lambda_continent_heatmap.pdf")
+Plots.pdf("Lambda_continent_heatmap.pdf")
 
-files = ["data/Corr_raw.jld", "data/Corr_adjust.jld", "data/Corr_adjust2.jld"]
+files = ["Corr_raw.jld", "Corr_adjust.jld", "Corr_adjust2.jld"]
 corrs = map(files) do f
     JLD.load(f, "corr")
 end
 x = ["Raw", "Effort", "Effort \n + \n Climate"]
-y = ["tmin", "tmax", "tmean", "stl1", "stl2", "stl3", "swvl1", "swvl2", "swvl3", "swvl4", "ssr", "tp"]
+y = ["tmin", "tmax", "tmean", "stl1", "stl2", "stl3", "stl4", "swvl1", "swvl2", "swvl3", "swvl4", "ssr", "tp"]
 corrs = hcat(corrs ...)
+corrs = corrs[[1:2; 4:14], :]
 h = heatmap(x, y, corrs, seriescolor = :RdBu, clim = (-1, 1), layout = (1,2), subplot =1, title = "Imputed data", size = (700, 500),bottom_margin=20px, left_margin=20px, right_margin=20px, top_margin=30px, tickfontsize = 12, colorbar = :none)
 
-files = ["data/Corr_rand_raw.jld", "data/Corr_rand_adjust.jld", "data/Corr_rand_adjust2.jld"]
+files = ["Corr_rand_raw.jld", "Corr_rand_adjust.jld", "Corr_rand_adjust2.jld"]
 corrs = map(files) do f
     JLD.load(f, "corr")
 end
 x = ["Raw", "Effort", "Effort \n + \n Climate"]
 y = ["tmin", "tmax", "tmean", "stl1", "stl2", "stl3", "swvl1", "swvl2", "swvl3", "swvl4", "ssr", "tp"]
 corrs = hcat(corrs ...)
+corrs = corrs[[1:2; 4:14], :]
 h = heatmap!(x, y, corrs, seriescolor = :RdBu, clim = (-1, 1), subplot =2, title = "Randomised \n imputed data", tickfontsize = 12)
-Plots.pdf(h, "plots/Correlation_heatmap.pdf")
+Plots.pdf(h, "Correlation_heatmap.pdf")
 
 
 ### PLOT EXAMPLE OF SPECIES ADJUSTMENT ###

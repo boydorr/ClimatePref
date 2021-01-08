@@ -190,7 +190,7 @@ using Plots
 import Plots.px
 pyplot()
 
-files = ["data/Corr_raw.jld", "data/Corr_adjust.jld", "data/Corr_adjust2.jld"]
+files = ["Corr_raw.jld", "Corr_adjust.jld", "Corr_adjust2.jld"]
 corrs = map(files) do f
     JLD.load(f, "corr")
 end

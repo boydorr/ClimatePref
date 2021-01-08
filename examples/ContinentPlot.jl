@@ -124,9 +124,9 @@ pyplot()
 heatmap(seriescolor = :Blues, size = (1000, 500), guidefontsize = 12, tickfontsize = 12, xrotation = 90, clim = (0, 1), colorbar_title = "λ", layout = (@layout [a b c; d e f]), link = :both, margin = 5*Plots.mm, titlefontsize = 14)
 continents = ["Africa", "South America", "North America", "Europe", "Asia", "Australasia"]
 for i in 1:6
-    lambdas_1 = JLD.load("data/Lambdas_raw_continent$i.jld", "lambdas")
-    lambdas_2 = JLD.load("data/Lambdas_effort_continent$i.jld", "lambdas")
-    lambdas_3 = JLD.load("data/Lambdas_climate_continent$i.jld", "lambdas")
+    lambdas_1 = JLD.load("Lambdas_raw_continent$i.jld", "lambdas")
+    lambdas_2 = JLD.load("Lambdas_effort_continent$i.jld", "lambdas")
+    lambdas_3 = JLD.load("Lambdas_climate_continent$i.jld", "lambdas")
 
     x = ["Raw", "Effort", "Effort + \n Climate"]
     y = ["tmin", "tmax", "tmean", "stl1", "stl2", "stl3", "stl4", "swvl1", "swvl2", "swvl3", "swvl4", "ssr", "tp"]
@@ -137,7 +137,7 @@ for i in 1:6
     lambdas = hcat(lambdas_1, lambdas_2, lambdas_3)
     display(heatmap!(y, x, transpose(lambdas[subset, :]), seriescolor = :Blues, colorbar = :legend, guidefontsize = 12, tickfontsize = 12, xrotation = 90, clim = (0, 1), colorbar_title = "λ", subplot = i, title = continents[i], legend = legend, xaxis = xax, yaxis = yax))
 end
-Plots.pdf("plots/Lambda_continent_heatmap.pdf")
+Plots.pdf("Lambda_continent_heatmap_separate.pdf")
 
 using JuliaDB
 using JuliaDBMeta
@@ -150,7 +150,7 @@ dat = @transform dat {tmin = ustrip.(uconvert.(°C, :tmin)), tmax = ustrip.(ucon
 dat2 = DataFrame(dat)
 CSV.write("Phylo_traits.csv", dat2)
 
-continent = JLD.load("Phylo_dat_continent.jld", "dat")
+continent = JLD.load("Phylo_dat_continent.jld", "dat1")
 names = JLD.load("Common_species_names.jld", "spp_names")
 names = join.(split.(names, " "), "_")
 

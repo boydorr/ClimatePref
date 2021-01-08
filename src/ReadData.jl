@@ -138,8 +138,8 @@ function readworldclim(dir::String)
         world .+= 273.15K
     end
     if txy[1] <: AbstractFloat
-        world[world .== world[Axis{:latitude}(0°),
-                                             Axis{:longitude}(0°),
+        world[world .== world[Axis{:latitude}(0.0°),
+                                             Axis{:longitude}(0.0°),
                                              Axis{:time}(1month)]] *= NaN;
     end;
 
