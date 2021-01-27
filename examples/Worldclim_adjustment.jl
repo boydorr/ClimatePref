@@ -1,7 +1,7 @@
 using Unitful
 using Unitful.DefaultSymbols
 using ClimatePref
-using MyUnitful
+using ClimatePref.Units
 using JuliaDB
 
 prec = load("Worldclim/prec")
@@ -19,6 +19,7 @@ function addtabs(wc)
     return wc
 end
 wc = addtabs(renamecol(prec, :val, :prec))
+wc = reindex(wc, :refval)
 wc = distribute(wc, 1)
 
 gbif = JuliaDB.load("GBIF_TPL")
@@ -27,7 +28,7 @@ x = collect(JuliaDB.select(gbif, :decimallatitude))
 y = collect(JuliaDB.select(gbif, :decimallongitude))
 refval = extractvalues(y .* °, x .* °, ref)
 gbif = pushcol(gbif, :refval, refval)
-
+gbif = reindex(gbif, :refval)
 
 gbif_join = join(gbif, wc,  how=:inner, lkey=:refval, rkey =:refval, rselect = (:prec, :srad, :tavg, :tmax, :tmin, :month), lselect = (:SppID, :refval, :date))
 save(gbif_join, "GBIF_WC")
@@ -129,7 +130,7 @@ JLD.save("Total_evi_counts_wc.jld", "total", total_evi_counts)
 using Unitful
 using Unitful.DefaultSymbols
 using ClimatePref
-using MyUnitful
+using ClimatePref.Units
 using JuliaDB
 using PhyloNetworks
 using GLM
@@ -157,10 +158,11 @@ function filterGBIF(file::String)
     tree = readTopology("Qian2016.tree")
     tipnames = tipLabels(tree)
     tip_names = join.(split.(tipnames, "_"), " ")
-    sppDict = JLD.load("SppDict.jld", "spd")
-    spp_names = collect(keys(sppDict))
+    spp_names = JLD.load("Species_names.jld", "spp_names")
+    spp_ids = JLD.load("Species_names.jld", "spp_ids")
+    sppdict = Dict(zip(spp_names, spp_ids))
     cross_species = spp_names ∩ tip_names
-    cross_ids = [sppDict[x] for x in cross_species]
+    cross_ids = [sppdict[x] for x in cross_species]
     gbif_fil = filter(g->g.SppID in cross_ids, gbif)
     gbif_fil = filter(g -> !isnan(g.prec), gbif_fil)
     return gbif_fil
@@ -169,12 +171,13 @@ end
 #spp = collect(JuliaDB.select(gbif, :SppID))
 #numspp = unique(spp)
 
-sppDict = JLD.load("SppDict.jld", "spd")
-spp_names = collect(keys(sppDict))
+spp_names = JLD.load("Species_names.jld", "spp_names")
+spp_ids = JLD.load("Species_names.jld", "spp_ids")
+sppdict = Dict(zip(spp_names, spp_ids))
 
 # Get top 5000 most common species
 cross_species = spp_names ∩ tip_names
-cross_ids = [sppDict[x] for x in cross_species]
+cross_ids = [sppdict[x] for x in cross_species]
 #sorted_counts = countmap(spp)
 #sorted_counts = filter((k, v) -> k in cross_ids, sorted_counts)
 #sorted_counts = sort(sorted_counts, byvalue=true, rev=true)
@@ -200,7 +203,7 @@ function meanGBIF!(gbif_fil, cross_species, cross_ids)
     gbif_fil = @groupby gbif_fil :SppID {prec = mean(skipmissing(ustrip(:prec))), srad = mean(skipmissing(ustrip(:srad))), tavg = mean(skipmissing(ustrip(:tavg))), tmax = mean(skipmissing(ustrip(:tmax))), tmin = mean(skipmissing(ustrip(:tmin)))}
 
 # Add in tip names to data and save
-    trait_ids = collect(select(gbif_fil, :SppID))
+    trait_ids = collect(JuliaDB.select(gbif_fil, :SppID))
     new_cross_species = cross_species[indexin(trait_ids, cross_ids)]
     gbif_fil = pushcol(gbif_fil, :tipNames, join.(split.(new_cross_species, " "), "_"))
 end
