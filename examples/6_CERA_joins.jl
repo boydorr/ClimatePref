@@ -6,13 +6,14 @@ using ClimatePref.Units
 @everywhere using Unitful, Unitful.DefaultSymbols
 @everywhere using StatsBase
 
-# 
+# Load CERA/ERA data and convert units where necessary, adding columns for different months of the year
 cera_era = load("CERA_ERA")
 cera_era = reindex(cera_era, (:refval, :date0))
 cera_era = select(cera_era, (:refval, :date0, :year, :x, :y, :month,:stl1, :stl2, :stl3, :stl4, :swvl1, :swvl2, :swvl3, :swvl4, :ssr, :t2m, :tp))
 cera_era = @transform cera_era {ssr = ustrip(:ssr) * J * m^-2}
 cera_era = renamecol(cera_era, :date0, :date)
 var = fill(0.0°C, length(cera_era) +11)
+
 function convert_vars(tab::JuliaDB.IndexedTable, vec::Vector{Q}, var::Symbol) where Q <: Unitful.Quantity
     for i in 11:-1:1
         vec[i:(length(tab) + (i-1))] .= collect(select(cera_era, var))
@@ -38,14 +39,16 @@ save(new_cera, "CERA_ERA_ALL")
 
 cera_era = load("CERA_ERA_ALL")
 cera_era = distribute(cera_era, 8)
-save(cera_era, "/home/claireh/sdb/PHYLO/CERA_ERA_all")
+save(cera_era, "CERA_ERA_all")
 
+# Join to GBIF data
 cera_era = load("CERA_ERA_all")
 gbif = load("Small_GBIF")
 #gbif = distribute(gbif, 1)
 cera_join = join(cera_era, gbif, how = :inner, lkey = (:refval, :date), rkey = (:refval, :date))
 save(cera_join, "CERA_JOIN")
 
+# Simplify the data so that there is one entry per GBIF record (i.e. summarise over year)
 cera_small = select(cera_join, (:UID, :SppID, :refval, :date, :t2m, :t2m_1, :t2m_2, :t2m_3, :t2m_4, :t2m_5, :t2m_6, :t2m_7, :t2m_8, :t2m_9, :t2m_10, :t2m_11))
 cera_join = @transform cera_join {tmin = min(:t2m, :t2m_1, :t2m_2, :t2m_3, :t2m_4, :t2m_5, :t2m_6, :t2m_7, :t2m_8, :t2m_9, :t2m_10, :t2m_11)}
 cera_join = @transform cera_join {tmin = uconvert.(K, :tmin)}

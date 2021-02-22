@@ -1,4 +1,5 @@
 # 9. Bin EVI data
+
 using ClimatePref
 using JuliaDB
 using JuliaDBMeta
@@ -8,6 +9,7 @@ using RCall
 @everywhere using Unitful
 @everywhere using Unitful.DefaultSymbols
 
+# Load EVI tiff in R and extract values to JuliaDB table
 R"library(raster)
 evi = raster('Evi.tif')
 print(evi)
@@ -75,7 +77,7 @@ total_evi_counts = hcat(total_evi_counts...)
 JLD.save("Total_evi_counts.jld", "total", total_evi_counts)
 
 
-## Join cera and evi data with continents and filter missing values
+# Join cera and evi data with continents and filter missing values
 cera_simple = JuliaDB.load("CERA_simple")
 continents = JuliaDB.load("Continents")
 evi_tab = JuliaDB.load("EVI")

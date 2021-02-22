@@ -1,9 +1,11 @@
 # 2. Script to clean GBIF occurrences by plant list
 using JuliaDB
 using ClimatePref
+
 # Load plant list dataset (from source text files generated from http://www.theplantlist.org)
 tpl = readTPL("TPL")
 save(tpl, "ThePlantList")
+
 # Load plant list - needs garbage collector workaround to avoid Julia crashing - issue described here: https://github.com/JuliaComputing/MemPool.jl/issues/26
 Base.GC.enable(false)
 tpl = load("ThePlantList")

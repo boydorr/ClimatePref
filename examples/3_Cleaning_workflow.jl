@@ -56,7 +56,7 @@ centroids = load("Centroids")
 gbif = join(gbif, centroids, how=:anti, lkey=:refval, rkey =:refval)
 gbif = popcol(gbif, :refval)
 
-
+# Alternative to anti-join using filtering
 gbif = load("GBIF_antijoin")
 gardens = load("Gardens")
 refs = collect(select(gardens, :refval))
@@ -69,7 +69,7 @@ gbif = filter(g -> g.refval ∉ refs, gbif)
 gbif = popcol(gbif, :refval)
 save(gbif, "GBIF_filtered")
 
-# 4. Streamline data to only necessary columns
+# Streamline data to only necessary columns
 
 # Load GBIF and add in unique record ID and Species ID column
 gbif = load("GBIF_filtered")
