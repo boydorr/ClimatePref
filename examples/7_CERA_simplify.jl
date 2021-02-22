@@ -1,4 +1,4 @@
-## Simplify climate data for later binning
+# 7. Simplify climate data for later binning
 
 using JuliaDB
 using JuliaDBMeta

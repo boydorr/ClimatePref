@@ -1,4 +1,5 @@
-### RECONSTRUCT MISSING DATA
+# 12. Reconstruct climate preferences using ten-fold cross validation
+
 using JuliaDB
 using Unitful
 using ClimatePref
@@ -15,7 +16,7 @@ mins = [197.0K, 197.0K, 197.0K, 0K, 197.0K, 197.0K, 197.0K, 197.0K, 0.0m^3, 0.0m
 maxs = [320.0K, 320.0K, 320.0K, 80K, 320.0K, 320.0K, 320.0K, 320.0K, 1.0m^3, 1.0m^3, 1.0m^3, 1.0m^3, 3.0e7J/m^2, 0.1m]
 
 # Read in tip data and tree
-phylo_traits = JuliaDB.load("Phylo_traits_new")
+phylo_traits = JuliaDB.load("Phylo_traits")
 tree = readTopology("Qian2016.tree")
 
 # Cut tree down to common species

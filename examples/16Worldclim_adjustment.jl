@@ -1,3 +1,4 @@
+# 16. Perform phylogenetic trait analysis on Worldclim data
 using Unitful
 using Unitful.DefaultSymbols
 using ClimatePref
@@ -206,10 +207,11 @@ function meanGBIF!(gbif_fil, cross_species, cross_ids)
     trait_ids = collect(JuliaDB.select(gbif_fil, :SppID))
     new_cross_species = cross_species[indexin(trait_ids, cross_ids)]
     gbif_fil = pushcol(gbif_fil, :tipNames, join.(split.(new_cross_species, " "), "_"))
+    return gbif_fil
 end
 
 gbif_fil = JuliaDB.load("GBIF_FIL_WC")
-meanGBIF!(gbif_fil, cross_species, cross_ids)
+gbif_fil = meanGBIF!(gbif_fil, cross_species, cross_ids)
 
 JuliaDB.save(gbif_fil, "Phylo_traits_WC")
 
@@ -289,9 +291,9 @@ mins = [0.0mm, 0.0kJ/(u"d"*m^2), 200K, 200K, 200K]
 maxs = [2600.0mm, 50000.0kJ/(u"d"*m^2), 320K, 320K, 320K]
 
 # Load EVi and gbif counts
-total_evi_counts = JLD.load("Total_evi_counts_wc.jld", "total")
-total_gbif_counts = JLD.load("Total_gbif_counts_wc.jld", "total")
-total_wc_counts = JLD.load("Total_wc_counts.jld", "total")
+total_evi_counts = JLD.load("../../sdc/Total_evi_counts_wc.jld", "total")
+total_gbif_counts = JLD.load("../../sdc/Total_gbif_counts_wc.jld", "total")
+total_wc_counts = JLD.load("../../sdc/Total_wc_counts.jld", "total")
 
 # Make adjustment for effort and divide by wc counts
 adjustment = total_gbif_counts ./ (total_evi_counts .* total_wc_counts)
@@ -318,9 +320,9 @@ using JLD
 using Plots
 import Plots.px
 pyplot()
-lambdas_1 = JLD.load("data/Lambdas_common_wc.jld", "lambdas")
-lambdas_2 = JLD.load("data/Lambdas_EVI_adjust_WC.jld", "lambdas")
-lambdas_3 = JLD.load("data/Lambdas_temp_adjust_WC.jld", "lambdas")
+lambdas_1 = JLD.load("Lambdas_common_wc.jld", "lambdas")
+lambdas_2 = JLD.load("Lambdas_EVI_adjust_WC.jld", "lambdas")
+lambdas_3 = JLD.load("Lambdas_temp_adjust_WC.jld", "lambdas")
 x = ["Raw", "Effort", "Effort + \n Climate"]
 y = ["tp", "ssr", "tmean", "tmax", "tmin"]
 lambdas = hcat(lambdas_1, lambdas_2, lambdas_3)

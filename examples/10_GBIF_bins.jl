@@ -1,4 +1,4 @@
-#### CODE FOR GBIF BINS ####
+# 10. Bin GBIF data
 using ClimatePref
 using JuliaDB
 using JuliaDBMeta

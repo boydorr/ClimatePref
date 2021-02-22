@@ -1,3 +1,4 @@
+# 11. Phylogenetic analysis of plant climate preferences
 using PhyloNetworks
 using GLM
 using JuliaDB
@@ -61,7 +62,7 @@ phylo_traits = @groupby gbif_fil :SppID {tmin = mean(ustrip(:tmin)), tmin10 = pe
 trait_ids = collect(JuliaDB.select(phylo_traits, :SppID))
 new_cross_species = [sppdict[i] for i in trait_ids]
 phylo_traits = pushcol(phylo_traits, :tipNames, join.(split.(new_cross_species, " "), "_"))
-JuliaDB.save(phylo_traits, "Phylo_traits_new")
+JuliaDB.save(phylo_traits, "Phylo_traits")
 
 # Filter for common species
 phylo_traits_filter = filter(p -> p.tipNames in join.(split.(top_common_names, " "), "_"), phylo_traits)

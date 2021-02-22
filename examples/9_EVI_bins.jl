@@ -1,4 +1,4 @@
-#### CODE FOR EVI-ADJUSTED BINS ####
+# 9. Bin EVI data
 using ClimatePref
 using JuliaDB
 using JuliaDBMeta

@@ -1,4 +1,5 @@
-# 4. Join GBIF to full CERA/ERA data
+# 6. Join GBIF to full CERA/ERA data
+
 using JuliaDB
 using JuliaDBMeta
 using ClimatePref.Units
@@ -6,7 +7,7 @@ using ClimatePref.Units
 @everywhere using StatsBase
 
 # 
-cera_era = load("CERA_ERA_new")
+cera_era = load("CERA_ERA")
 cera_era = reindex(cera_era, (:refval, :date0))
 cera_era = select(cera_era, (:refval, :date0, :year, :x, :y, :month,:stl1, :stl2, :stl3, :stl4, :swvl1, :swvl2, :swvl3, :swvl4, :ssr, :t2m, :tp))
 cera_era = @transform cera_era {ssr = ustrip(:ssr) * J * m^-2}
@@ -33,14 +34,14 @@ end
 
 new_cera = convert_vars(cera_era, params)
 new_cera = filter(c-> c.date >= 1902.0year, new_cera)
-save(new_cera, "CERA_ERA_ALL_new")
+save(new_cera, "CERA_ERA_ALL")
 
-cera_era = load("CERA_ERA_ALL_new")
+cera_era = load("CERA_ERA_ALL")
 cera_era = distribute(cera_era, 8)
 save(cera_era, "/home/claireh/sdb/PHYLO/CERA_ERA_all")
 
 cera_era = load("CERA_ERA_all")
-gbif = load("Small_GBIF_new")
+gbif = load("Small_GBIF")
 #gbif = distribute(gbif, 1)
 cera_join = join(cera_era, gbif, how = :inner, lkey = (:refval, :date), rkey = (:refval, :date))
 save(cera_join, "CERA_JOIN")

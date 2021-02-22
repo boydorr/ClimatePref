@@ -11,10 +11,10 @@ centroids = loadtable("Centroids.csv", chunks = 1)
 centroids = @transform centroids {Latitude = :y, Longitude = :x}
 
 # Filter them out
-# gbif = load("GBIF_TPL_new")
+# gbif = load("GBIF_TPL")
 # gbif = mask(gbif, gardens, 0.02)
 # gbif = mask(gbif, centroids, 0.02)
-# save(gbif, "GBIF_mask_new")
+# save(gbif, "GBIF_mask")
 
 # Takes too much memory to do in one function, so do mask in steps, saving out at each turn
 gardens = loadtable("gardens.csv", chunks = 1)
@@ -36,7 +36,7 @@ centroids = pushcol(centroids, :refval, extractvalues(coords[:, 2] * °, coords[
 save(centroids, "Centroids")
 
 # Load gbif data and add reference values for cleaning datasets
-gbif = load("GBIF_TPL_new")
+gbif = load("GBIF_TPL")
 ref = create_reference(0.02)
 lat = collect(select(gbif, :decimallatitude))
 lon = collect(select(gbif, :decimallongitude))
@@ -97,6 +97,8 @@ lon = collect(select(gbif, :decimallongitude))
 ref = create_reference(0.75)
 refval = extractvalues(lon .* °, lat .* °, ref)
 gbif = pushcol(gbif, :refval, refval)
+
+# Only keep necessary columns for easier joins later (smaller dataset)
 small_gbif = select(gbif, (:UID, :SppID, :date, :refval))
 small_gbif = reindex(small_gbif, (:refval, :date))
 save(small_gbif, "Small_GBIF")

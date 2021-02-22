@@ -1,4 +1,4 @@
-# 6. Convert CERA data into JuliaDB tables
+# 4. Convert CERA data into JuliaDB tables
 # and combine with era
 using ClimatePref
 using ClimatePref.Units
@@ -11,6 +11,7 @@ using AxisArrays
 folder = "."
 files = ["cera_20c_soiltemp1_", "cera_20c_soiltemp2_", "cera_20c_soiltemp3_", "cera_20c_soiltemp4_", "cera_20c_soilwater1_", "cera_20c_soilwater2_", "cera_20c_soilwater3_", "cera_20c_soilwater4_", "cera_20c_surfacenetsolar_", "cera_20c_temp2m_", "cera_20c_totalprec_"]
 params = ["stl1","stl2","stl3","stl4","swvl1","swvl2","swvl3","swvl4","ssr", "t2m", "tp"]
+
 for i in eachindex(files)[1:end]
     cera = readCERA(folder, files[i], params[i])
     AxisArrays.axes(cera.array)[3].val .-= 1month
@@ -32,14 +33,14 @@ cera = renamecol(cera, :val, Symbol(params[1]))
 cera = combine_cera(cera)
 cera = select(cera, (:x, :y, :month, :year, :refval, :stl1, :stl2, :stl3, :stl4, :swvl1, :swvl2, :swvl3, :swvl4, :ssr, :t2m, :tp))
 cera = reindex(cera, (:year, :refval))
-save(cera, "cera_all_new")
+save(cera, "cera_all")
 
 # Merge with ERA interim for combined data
 era = load("../ECMWF/era_int_all")
-cera = load("cera_all_new")
+cera = load("cera_all")
 cera_filter = filter(c-> c.year < 1979, cera)
 cera_era = merge(cera_filter, era)
-save(cera_era, "CERA_ERA_new")
+save(cera_era, "CERA_ERA")
 
 # Create date columns (one for each month of data being extracted)
 yr = select(cera_era, :year) .* year
@@ -54,4 +55,4 @@ function era_extend(era::IndexedTable)
     return era
 end
 cera_era_date = era_extend(cera_era)
-save(cera_era_date, "CERA_ERA_new")
+save(cera_era_date, "CERA_ERA")

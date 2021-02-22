@@ -1,6 +1,5 @@
-#### CODE FOR CERA BINS ####
-include("GIT/Chapter4/src/Chapter4.jl")
-using .Chapter4
+# 8. Bin CERA data
+using ClimatePref
 using JuliaDB
 using JuliaDBMeta
 @everywhere using OnlineStats
