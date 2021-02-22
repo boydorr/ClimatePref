@@ -15,3 +15,5 @@
 - [Qian *et al.* 2016](https://doi.org/10.1093/jpe/rtv047)
 
 This package is in alpha now, so please raise an issue if you find any problems.
+
+![](docs/tree.pdf)
