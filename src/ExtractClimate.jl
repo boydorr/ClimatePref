@@ -3,7 +3,6 @@ using Unitful.DefaultSymbols
 using ClimatePref.Units
 using AxisArrays
 using NetCDF
-using Compat
 
 function checkbounds(x::Vector{typeof(1.0°)}, y::Vector{typeof(1.0°)})
     -180.0 .<= x .<= 180.0 || error("X coordinate is out of bounds")
