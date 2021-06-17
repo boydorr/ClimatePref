@@ -34,16 +34,16 @@ lambda_estim(lambda)
 # Add individual records
 trait_individual = by(trait1, :tipNames, temp = :temp => x -> rand(Normal(x[1], 0.1), 100))
 trait_individual = DataFrames.flatten(trait_individual, :temp)
-samp = sample(1:nrow(trait_individual), round(Int64, nrow(trait_individual) * 0.05), replace = false)
+samp = sample(1:nrow(trait_individual), round(Int64, nrow(trait_individual) * 0.2), replace = false)
 trait_individual[!, :temp_shift] = trait_individual[!, :temp]
 trait_individual[samp, :temp_shift] .+= 10.0
-trait_mean = combine(groupby(trait_individual, :tipNames), :temp => mean)
+trait_mean = by(trait_individual, :tipNames, :temp => mean)
 
 lambda = phyloNetworklm(@formula(temp_mean ~ 1), trait_mean, tree, model="lambda")
 lambda_estim(lambda)
 
 # Overall loop
-reps = 10; shift = 10.0; ind_var = 1.0; prop_to_shift = [0.01, 0.05, 0.1, 0.2]
+reps = 10; shift = 10.0; ind_var = 1.0; prop_to_shift = [0.05, 0.1, 0.25, 0.5]
 lambda_mat = zeros(Float64, reps, length(prop_to_shift))
 lambda_shift_mat = zeros(Float64, reps, length(prop_to_shift))
 
@@ -52,18 +52,21 @@ for r in 1:reps
         temp_trait = ParamsBM(25, 10.0)
         sim1 = simulate(tree, temp_trait)
         trait1 = DataFrame(temp = sim1[:Tips], tipNames = tipLabels(sim1))
-        trait_individual = by(trait1, :tipNames, temp = :temp => x -> rand(Normal(x[1], ind_var), 100))
+        trait_individual = by(trait1, :tipNames, temp = :temp => x -> rand(Normal(x[1], ind_var), 10_000))
         trait_individual = DataFrames.flatten(trait_individual, :temp)
         trait_mean = by(trait_individual, :tipNames, :temp => mean)
         lambda = phyloNetworklm(@formula(temp_mean ~ 1), trait_mean, tree, model="lambda")
         lambda_mat[r, p] = lambda_estim(lambda)
-
-        samp = sample(1:nrow(trait_individual), round(Int64, nrow(trait_individual) * prop_to_shift[p]), replace = false)
-        trait_individual[!, :temp_shift] = trait_individual[!, :temp]
-        trait_individual[samp, :temp_shift] .+= shift
-        trait_mean = by(trait_individual, :tipNames, :temp_shift => mean)
-        lambda = phyloNetworklm(@formula(temp_shift_mean ~ 1), trait_mean, tree, model="lambda")
-        lambda_shift_mat[r, p] = lambda_estim(lambda)
+        println(lambda_estim(lambda))
+        for i in unique(trait_individual[!, :tipNames])
+            pos = findall(trait_individual[!, :tipNames] .== i)
+            samp = sample(pos, round(Int64, length(pos) * prop_to_shift[p]), replace = false)
+            trait_individual[samp, :temp] .+= shift
+        end
+        trait_mean = by(trait_individual, :tipNames, :temp => mean)
+        lambda_shift = phyloNetworklm(@formula(temp_shift_mean ~ 1), trait_mean, tree, model="lambda")
+        lambda_shift_mat[r, p] = lambda_estim(lambda_shift)
+        println(lambda_estim(lambda_shift))
     end
     println("Repeat $r")
 end
