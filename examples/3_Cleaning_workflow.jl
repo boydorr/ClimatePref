@@ -103,10 +103,13 @@ small_gbif = select(gbif, (:UID, :SppID, :date, :refval))
 small_gbif = reindex(small_gbif, (:refval, :date))
 save(small_gbif, "Small_GBIF")
 
-
+using StatsBase
+using JuliaDB
+using Unitful
+using DataFrames
 # Explore top 100 recording institutions
 gbif = load("/home/claireh/Documents/gbif/full_data/GBIF_filtered/")
-institutions = collect(select(gbif, :institutioncode))
+institutions = collect(JuliaDB.select(gbif, :institutioncode))
 inst_count = countmap(institutions)
 top100 = sort(collect(inst_count), by = x->x[2], rev = true)[2:101]
 t = DataFrame(collect(top100))
@@ -114,7 +117,9 @@ rename!(t, [:Institution, :NumRecords])
 CSV.write("Top_institutions.csv", t)
 sum(map(x->x[2], top100))*100/length(gbif) # Roughly 65% of data here
 
-gbif_fil = filter(g -> g.institutioncode ∈ t[!, :Insitution], gbif)
+gbif = pushcol(gbif, :UID, 1:length(gbif))
+gbif_fil = filter(g -> g.institutioncode ∈ t[!, :Institution], gbif)
+JuliaDB.save(gbif_fil, "GBIF_top_institutes")
 
 # Explore the 25% that have no institution code
 gbif_no_inst = filter(g -> g.institutioncode =="", gbif)
@@ -124,10 +129,3 @@ top1000recorders = filter(x-> x[2] >= 1000, toprecorders)
 trec = DataFrame(collect(top1000recorders))
 rename!(trec, [:RecordedBy, :NumRecords])
 CSV.write("Top_recorders.csv", trec)
-
-
-cera_records = JuliaDB.load("sdb/PHYLO/CERA_JOIN_SIMPLE")
-recordID = unique(collect(JuliaDB.select(cera_records, :UID)))
-gbif = load("/home/claireh/Documents/gbif/full_data/GBIF_filtered/")
-gbif = pushcol(gbif, :UID, 1:length(gbif))
-gbif_fil = filter(g-> g.UID ∈ recordID, gbif)
