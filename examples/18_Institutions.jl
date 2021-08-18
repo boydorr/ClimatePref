@@ -22,13 +22,19 @@ tree = readTopology("Qian2016.tree")
 tipnames = tipLabels(tree)
 tip_names = join.(split.(tipnames, "_"), " ")
 
-cera_records = JuliaDB.load("CERA_JOIN_SIMPLE")
+# Get record IDs of records without citizen science
 gbif = JuliaDB.load("/home/claireh/Documents/gbif/full_data/GBIF_filtered/")
+gbif = pushcol(gbif, :UID, 1:length(gbif))
 top = JuliaDB.loadtable("Top_institutions.csv")
 citizen_science = collect(JuliaDB.select(filter(t->t.Citizen_science == "TRUE", top), :Institution))
 gbif_fil = filter(g -> g.institutioncode ∉ citizen_science, gbif)
 recordID = unique(collect(JuliaDB.select(gbif_fil, :UID)))
+JLD.save("Record_ID_no_citizen_science.jld", "recordID", recordID)
 
+# Filter cera records for these
+cera_records = JuliaDB.load("CERA_JOIN_SIMPLE")
+recordID = JLD.load("Record_ID_no_citizen_science.jld", "recordID")
+cera_fil = filter(c -> c.UID ∈ recordID, cera_records)
 # Load Species names
 spp_names = JLD.load("Species_names.jld", "spp_names")
 spp_ids = JLD.load("Species_names.jld", "spp_ids")
