@@ -209,6 +209,3 @@ y = ["tmin", "tmax", "tmean", "stl1", "stl2", "stl3", "swvl1", "swvl2", "swvl3",
 corrs = hcat(corrs ...)
 h = heatmap!(x, y, corrs, seriescolor = :RdBu, clim = (-1, 1), subplot =2, title = "Randomised \n imputed data", tickfontsize = 12)
 png(h, "Correlation_heatmap.png")
-
-recon_dat = JLD.load("data/AncRecon.jld", "traits")
-scatter(dat[:tmin], recon_dat[:tmin])

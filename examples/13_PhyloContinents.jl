@@ -84,7 +84,7 @@ end
 
 function adjustData(gbif::JuliaDB.DIndexedTable,  spp_dict::Dict, continent::Int64, filter_names::Vector{String}, adjustment::Array{Float64, 2}, mins, maxs)
     # Filter for continent
-    gbif1 = filter(g->g.continent == continent, gbif_fil)
+    gbif1 = filter(g->g.continent == continent, gbif)
 
     # Apply adjustment to data grouped by Species ID
     phylo_traits = @groupby gbif1 :SppID {tmin = adjust_cont(uconvert.(K, :tmin), adjustment[:, 1], mins[1], maxs[1]),tmax = adjust_cont(uconvert.(K, :tmax), adjustment[:, 2], mins[2], maxs[2]), tmean = adjust_cont(uconvert.(K, :tmean), adjustment[:, 3], mins[3], maxs[3]), trng = adjust_cont(uconvert.(K, :trng), adjustment[:, 4], mins[4], maxs[4]), stl1 = adjust_cont(uconvert.(K, :stl1mean), adjustment[:, 5], mins[5], maxs[5]), stl2 = adjust_cont(uconvert.(K, :stl2mean), adjustment[:, 6], mins[6], maxs[6]), stl3 = adjust_cont(uconvert.(K, :stl3mean), adjustment[:, 7], mins[7], maxs[7]), stl4 = adjust_cont(uconvert.(K, :stl4mean), adjustment[:, 8], mins[8], maxs[8]), swvl1 = adjust_cont(:swvl1mean, adjustment[:, 9], mins[9], maxs[9]), swvl2 =  adjust_cont(:swvl2mean, adjustment[:, 10], mins[10], maxs[10]), swvl3 =  adjust_cont(:swvl3mean, adjustment[:, 11], mins[11], maxs[11]), swvl4 =  adjust_cont(:swvl4mean, adjustment[:, 12], mins[12], maxs[12]), ssr =  adjust_cont(:ssrmean, adjustment[:, 13], mins[13], maxs[13]), tp =  adjust_cont(:tpmean, adjustment[:, 14], mins[14], maxs[14]), samp_size = length(:refval)}
@@ -115,7 +115,7 @@ end
 @everywhere function weightmean(x, y)
     return mapslices(x -> mean(x, weights(y)), hcat(x...),dims = 2)
 end
-function fitAdjust(gbif::JuliaDB.DIndexedTable, tree::HybridNetwork, continents::Vector{Int64}, spp_dict::Dict, top_common_names::Vector{String}, mins, maxs; climate::Bool = false, raw::Bool = false)
+function fitAdjust(gbif::JuliaDB.DIndexedTable, continents::Vector{Int64}, spp_dict::Dict, top_common_names::Vector{String}, mins, maxs; climate::Bool = false, raw::Bool = false)
     total_dat = []
     for c in continents[1:end]
         evi_counts = JLD.load("Total_evi_counts_$c.jld", "total")
@@ -127,7 +127,7 @@ function fitAdjust(gbif::JuliaDB.DIndexedTable, tree::HybridNetwork, continents:
         if raw
             fill!(adjustment, 1)
         end
-        dat = adjustData(gbif_fil, spp_dict, c, top_common_names, adjustment, mins, maxs)
+        dat = adjustData(gbif, spp_dict, c, top_common_names, adjustment, mins, maxs)
         if length(total_dat) > 0
             total_dat = merge(total_dat, dat)
         else
@@ -140,13 +140,13 @@ function fitAdjust(gbif::JuliaDB.DIndexedTable, tree::HybridNetwork, continents:
     return total_dat1
 end
 
-dat1 = fitAdjust(gbif_fil, tree, collect(1:6), spp_dict, top_common_names, mins, maxs, raw = true)
+dat1 = fitAdjust(gbif_fil, collect(1:6), spp_dict, top_common_names, mins, maxs, raw = true)
 JLD2.@save "Phylo_dat_continent.jld" dat1
 
-dat2 = fitAdjust(gbif_fil, tree, collect(1:6), spp_dict, top_common_names, mins, maxs)
+dat2 = fitAdjust(gbif_fil, collect(1:6), spp_dict, top_common_names, mins, maxs)
 JLD2.@save "Phylo_dat_adjust_continent.jld2" dat2
 
-dat3 = fitAdjust(gbif_fil, tree, collect(1:6), spp_dict, top_common_names,  mins, maxs, climate = true, raw = false)
+dat3 = fitAdjust(gbif_fil, collect(1:6), spp_dict, top_common_names,  mins, maxs, climate = true, raw = false)
 JLD2.@save "Phylo_dat_adjust2_continent.jld2" dat3
 
 

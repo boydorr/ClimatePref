@@ -9,9 +9,9 @@ using ClimatePref.Unitful
 using PhyloNetworks
 
 # Load raw data vs reconstructed
-raw_traits = JuliaDB.load("examples/Phylo_traits_adjust")
-recon_traits = JLD.load("examples/AncRecon_adjust.jld", "traits")
-top_common_names = JLD.load("examples/Common_species_names.jld", "spp_names")
+raw_traits = JuliaDB.load("data/Phylo_traits_adjust")
+recon_traits = JLD.load("data/AncRecon_adjust.jld", "traits")
+top_common_names = JLD.load("data/Common_species_names.jld", "spp_names")
 raw_traits_filter = filter(p -> p.tipNames in join.(split.(top_common_names, " "), "_"), raw_traits)
 
 old = collect(JuliaDB.select(raw_traits_filter, :tmin))
@@ -22,6 +22,16 @@ scatter(old ./ K, new, grid = false, xlabel = "Raw minimum temperature (K)",
        ylabel = "Reconstructed minimum temperature (K)", ms = 2, label =  "", markercolour = :grey, markerstrokecolour = false)
 plot!(250:300, 250:300, label = "", colour = :black)
 Plots.pdf("examples/Reconstructedvsrawtmin.pdf")
+
+
+old = collect(JuliaDB.select(raw_traits_filter, :tmax))
+new = recon_traits[!, :tmax]
+
+# Plot against one another
+scatter(old ./ K, new, grid = false, xlabel = "Raw maximum temperature (K)",
+       ylabel = "Reconstructed maximum temperature (K)", ms = 2, label =  "", markercolour = :grey, markerstrokecolour = false)
+plot!(270:310, 270:310, label = "", colour = :black)
+Plots.pdf("examples/Reconstructedvsrawtmax.pdf")
 
 # Calculate root mean squared deviation
 rmsd(old ./K, new)
