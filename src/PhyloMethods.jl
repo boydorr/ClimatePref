@@ -53,11 +53,11 @@ end
 
     Function to fit Pagel's lambda models to a tree of type `HybridNetwork` for a range of variables, `vars`, in a dataframe of traits, `dat`. Returns a vector of lambda values, one per trait.
 """
-function fitLambdas(tree::HybridNetwork, dat::DataFrame, vars = Vector{Symbol})
+function fitLambdas(tree::HybridNetwork, dat::DataFrame, vars = Vector{Symbol}, startingValue::Float64 =0.5)
     lambdas = map(vars) do v
         dat[v] = ustrip.(dat[v])
         f = @eval @formula($v ~ 1)
-        fitPagel = phyloNetworklm(f, dat, tree, model="lambda")
+        fitPagel = phyloNetworklm(f, dat, tree, model="lambda", startingValue)
         lambda_estim(fitPagel)
     end
     return lambdas
