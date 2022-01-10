@@ -57,7 +57,7 @@ function fitLambdas(tree::HybridNetwork, dat::DataFrame, vars = Vector{Symbol}, 
     lambdas = map(vars) do v
         dat[v] = ustrip.(dat[v])
         f = @eval @formula($v ~ 1)
-        fitPagel = phyloNetworklm(f, dat, tree, model="lambda", startingValue)
+        fitPagel = phyloNetworklm(f, dat, tree, model="lambda", startingValue = startingValue)
         lambda_estim(fitPagel)
     end
     return lambdas
