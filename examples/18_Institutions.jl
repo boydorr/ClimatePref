@@ -162,13 +162,12 @@ using JLD
 using Plots
 import Plots.px
 pyplot()
-lambdas_1 = JLD.load("Lambdas_common_institutions.jld", "lambdas")
-lambdas_2 = JLD.load("Lambdas_EVI_adjust_institutions.jld", "lambdas")
-lambdas_3 = JLD.load("Lambdas_temp_adjust_institutions.jld", "lambdas")
+lambdas_1 = JLD.load("data/Lambdas_common_institutions.jld", "lambdas")
+lambdas_2 = JLD.load("data/Lambdas_EVI_adjust_institutions.jld", "lambdas")
 subset = [[1,3, 5]; collect(7:16)]
 subset2 = [collect(1:3); collect(5:14)]
-x = ["Raw", "Effort", "Effort + \n Climate"]
+x = ["Raw", "Effort"]
 y = ["tmin", "tmax", "tmean", "stl1", "stl2", "stl3", "stl4", "swvl1", "swvl2", "swvl3", "swvl4", "ssr", "tp"]
-lambdas = hcat(lambdas_1[subset], lambdas_2[subset2], lambdas_3[subset2])
-heatmap(y, x, transpose(lambdas), seriescolor = :Blues, colorbar = :legend, legend = :top, size = (900, 200), guidefontsize = 12, tickfontsize = 12, xrotation = 90, clim = (0, 1), colorbar_title = "λ")
+lambdas = hcat(lambdas_1[subset], lambdas_2[subset2])
+heatmap(y, x, transpose(lambdas), seriescolor = cgrad([:red, :white, :blue]), colorbar = :legend, legend = :top, size = (900, 200), guidefontsize = 12, tickfontsize = 12, xrotation = 90, clim = (0, 1), colorbar_title = "λ")
 Plots.pdf("Lambda_heatmap_institutions.pdf")

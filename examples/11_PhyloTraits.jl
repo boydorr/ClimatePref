@@ -143,18 +143,42 @@ JLD.save("Lambdas_temp_adjust.jld", "lambdas", lambdas)
 using JLD
 using Plots
 import Plots.px
+using Statistics
 pyplot()
-lambdas_1 = JLD.load("Lambdas_common.jld", "lambdas")
-lambdas_2 = JLD.load("Lambdas_EVI_adjust.jld", "lambdas")
-lambdas_3 = JLD.load("Lambdas_temp_adjust.jld", "lambdas")
+lambdas_1 = JLD.load("data/Lambdas_common.jld", "lambdas")
+lambdas_2 = JLD.load("data/Lambdas_EVI_adjust.jld", "lambdas")
+lambdas_3 = JLD.load("data/Lambdas_temp_adjust.jld", "lambdas")
 subset = [[1,3, 5]; collect(7:16)]
 subset2 = [collect(1:3); collect(5:14)]
 x = ["Raw", "Effort", "Effort + \n Climate"]
 y = ["tmin", "tmax", "tmean", "stl1", "stl2", "stl3", "stl4", "swvl1", "swvl2", "swvl3", "swvl4", "ssr", "tp"]
 lambdas = hcat(lambdas_1[subset], lambdas_2[subset2], lambdas_3[subset2])
-heatmap(y, x, transpose(lambdas), seriescolor = :Blues, colorbar = :legend, legend = :top, size = (900, 200), guidefontsize = 12, tickfontsize = 12, xrotation = 90, clim = (0, 1), colorbar_title = "λ")
-Plots.pdf("Lambda_heatmap.pdf")
+heatmap(y, x, transpose(lambdas), seriescolor = cgrad(:bluesreds_r, [0, mean(lambdas), 1]), colorbar = :legend, legend = :top, size = (900, 200), guidefontsize = 12, tickfontsize = 12, xrotation = 90, clim = (0, 1), colorbar_title = "λ")
+Plots.pdf("examples/Lambda_heatmap.pdf")
 
+x = ["Raw", "Effort"]
+y = ["tmin", "tmax", "tmean", "stl1", "stl2", "stl3", "stl4", "swvl1", "swvl2", "swvl3", "swvl4", "ssr", "tp"]
+lambdas = hcat(lambdas_1[subset], lambdas_2[subset2])
+heatmap(y, x, transpose(lambdas), seriescolor = cgrad([:red, :white, :blue], [0, mean(lambdas), 1]), colorbar = :legend, legend = :top, size = (900, 200), guidefontsize = 12, tickfontsize = 12, xrotation = 90, clim = (0, 1), colorbar_title = "λ")
+Plots.pdf("examples/Lambda_heatmap_new.pdf")
+
+using Colors
+mygrad = cgrad([:orange, :darkorange2, :darkorange3, 
+:palegreen, :green1, :green3, :green4,
+:skyblue, :skyblue2, :skyblue3, :skyblue4, 
+:gold, :purple])
+for i in eachindex(y)
+    if i == 1
+        p = plot(x[1:2], lambdas[i, 1:2], label = y[i], color = mygrad[i],
+        ylim = (0.4,1), ylab = "λ", xlab = "Correction",
+        legend = :outertopright)
+        p = plot!(x[2:3], lambdas[i, 2:3], line = :dot, label = "", color = mygrad[i])
+    else
+        p = plot!(x[1:2], lambdas[i, 1:2], label = y[i], color = mygrad[i])
+        p = plot!(x[2:3], lambdas[i, 2:3], line = :dot, label = "", color = mygrad[i])
+    end
+    display(p)
+end
 
 lambdas_1 = JLD.load("Lambdas_raw_continent.jld", "lambdas")
 lambdas_2 = JLD.load("Lambdas_effort_continent.jld", "lambdas")

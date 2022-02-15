@@ -58,7 +58,10 @@ dat = DataFrame(collect(phylo_traits_filter))
 # Reconstruct tmin
 anc = ancestralStateReconstruction(dat[:, [:tipNames, :tmin]], tree)
 ancInt = expectations(anc)
-
+anc = ancestralStateReconstruction(dat[:, [:tipNames, :ssr]], tree)
+ancInt[!, :ssr] = expectations(anc)[!, :condExpectation]
+anc = ancestralStateReconstruction(dat[:, [:tipNames, :tp]], tree)
+ancInt[!, :tp] = expectations(anc)[!, :condExpectation]
 # Save results
 JLD.save("examples/AncRecon_dat.jld", "anc", ancInt)
 writeTopology(tree, "examples/Qian_filtered.newick")
@@ -71,6 +74,18 @@ nodeindices = map(a -> PhyloNetworks.getIndexNode(a, tree), ancInt[:, :nodeNumbe
 nodes = tree2.nodes[nodeindices]
 for i in 1:nrow(ancInt)
     setnodedata!(tree2, nodes[i], "tmin",  ancInt[i, :condExpectation]-273.15)
+    setnodedata!(tree2, nodes[i], "ssr",  ancInt[i, :ssr]/1000)
+    setnodedata!(tree2, nodes[i], "tp",  ancInt[i, :tp] * 1000)
 end
-plot(tree2, line_z = "tmin", lw = 2)
-Plots.pdf("Ancestral_trait_recon.pdf")
+sort!(tree2)
+plot(tree2, line_z = "tmin", lw = 1, layout = (@layout [a b c]), size = (1600, 800), 
+title = "A", title_loc = :left, colorbar_title = "Minimum temperature (°C)", guidefontsize = 16, titlefontsize = 18,
+tickfontsize = 14, linecolor = :matter)
+plot!(tree2, line_z = "tp", lw = 1, subplot = 2, linecolor = :haline, size = (1600, 800), 
+title = "B", title_loc = :left, colorbar_title = "Total precipitation (mm)", guidefontsize = 16, titlefontsize = 18,
+tickfontsize = 14)
+plot!(tree2, line_z = "ssr", lw = 1, subplot = 3, linecolor = :cividis, size = (1600, 800), 
+title = "C", title_loc = :left, colorbar_title = "Solar radiation (kJ/m²)", guidefontsize = 16, titlefontsize = 18,
+tickfontsize = 14)
+
+Plots.pdf("examples/Ancestral_trait_recon_sep.pdf")

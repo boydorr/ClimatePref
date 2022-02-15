@@ -163,12 +163,11 @@ JLD.save("Lambdas_climate_continent.jld", "lambdas", lambdas3)
 using JLD
 using Plots
 pyplot()
-lambdas_1 = JLD.load("Lambdas_raw_continent.jld", "lambdas")
-lambdas_2 = JLD.load("Lambdas_effort_continent.jld", "lambdas")
-lambdas_3 = JLD.load("Lambdas_climate_continent.jld", "lambdas")
-x = ["Raw", "Effort", "Effort + \n Climate"]
+lambdas_1 = JLD.load("data/Lambdas_raw_continent.jld", "lambdas")
+lambdas_2 = JLD.load("data/Lambdas_effort_continent.jld", "lambdas")
+x = ["Raw", "Effort"]
 y = ["tmin", "tmax", "tmean", "stl1", "stl2", "stl3", "stl4", "swvl1", "swvl2", "swvl3", "swvl4", "ssr", "tp"]
 subset = [collect(1:3); collect(5:12);14;13]
-lambdas = hcat(lambdas_1, lambdas_2, lambdas_3)
-heatmap(y, x, transpose(lambdas[subset, :]), seriescolor = :Blues, colorbar = :legend, legend = :top, size = (900, 200), guidefontsize = 12, tickfontsize = 12, xrotation = 90, clim = (0, 1), colorbar_title = "λ")
+lambdas = hcat(lambdas_1, lambdas_2)
+heatmap(y, x, transpose(lambdas[subset, :]), seriescolor = cgrad(:bluesreds_r, [0, mean(lambdas), 1]), colorbar = :legend, legend = :top, size = (900, 200), guidefontsize = 12, tickfontsize = 12, xrotation = 90, clim = (0, 1), colorbar_title = "λ")
 Plots.pdf("Lambda_continent_heatmap.pdf")
