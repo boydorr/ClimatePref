@@ -123,6 +123,16 @@ using JLD
 using Plots
 pyplot()
 
+for i in 1:6
+    if i == 1
+        lambdas = zeros(15)
+    end
+    lambdas += JLD.load("Lambdas_raw_continent$i.jld", "lambdas")
+    lambdas += JLD.load("Lambdas_effort_continent$i.jld", "lambdas")
+    lambdas += JLD.load("Lambdas_climate_continent$i.jld", "lambdas")
+end
+mean_lambda = sum(lambdas) ./ (15*3*6)
+
 heatmap(seriescolor = :Blues, size = (1000, 500), guidefontsize = 12, tickfontsize = 12, xrotation = 90, clim = (0, 1), colorbar_title = "λ", layout = (@layout [a b c; d e f]), link = :both, margin = 5*Plots.mm, titlefontsize = 14)
 continents = ["Africa", "South America", "North America", "Europe", "Asia", "Australasia"]
 for i in 1:6
@@ -137,7 +147,7 @@ for i in 1:6
     xax = ifelse(i > 3, true, false)
     subset = [collect(1:3); collect(5:14)]
     lambdas = hcat(lambdas_1, lambdas_2, lambdas_3)
-    display(heatmap!(y, x, transpose(lambdas[subset, :]), seriescolor = :Blues, colorbar = :legend, guidefontsize = 12, tickfontsize = 12, xrotation = 90, clim = (0, 1), colorbar_title = "λ", subplot = i, title = continents[i], legend = legend, xaxis = xax, yaxis = yax))
+    display(heatmap!(y, x, transpose(lambdas[subset, :]), seriescolor = cgrad([:red, :white, :blue], [0, mean_lambda, 1]), colorbar = :legend, guidefontsize = 12, tickfontsize = 12, xrotation = 90, clim = (0, 1), colorbar_title = "λ", subplot = i, title = continents[i], legend = legend, xaxis = xax, yaxis = yax))
 end
 Plots.pdf("Lambda_continent_heatmap_separate.pdf")
 

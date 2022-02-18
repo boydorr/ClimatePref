@@ -132,12 +132,19 @@ for i in eachindex(classes)
     lambdas_c[i, :] .= lambda
 end
 
+lambdas_k = JLD.load("data/Lambdas_common_full.jld", "lambdas")
+
 tmin = DataFrame(λ = lambdas[:, 1], type = fill("genus", length(genera)))
 tmin = [tmin; DataFrame(λ = lambdas_f[:, 1], type = fill("family", length(families)))]
 tmin = [tmin; DataFrame(λ = lambdas_o[:, 1], type = fill("order", length(orders)))]
 tmin = [tmin; DataFrame(λ = lambdas_c[:, 1], type = fill("class", length(classes)))]
+tmin = [tmin; DataFrame(λ = lambdas_k[1], type = "kingdom")]
 
 scatter(tmin[!, :type], tmin[!, :λ], zcolor = tmin[!, :λ],  m = cgrad([:red, :white, :blue], [0, 0.5, 1]), label = "")
+plot!(["genus", "family", "order", "class"], [mean(lambdas), mean(lambdas_f), mean(lambdas_o), mean(lambdas_c)],
+colour = :black, label = "")
+plot!(["class", "kingdom"], [mean(lambdas_c), lambdas_k[1]], linestyle = :dash,
+colour = :black, label = "")
 Plots.pdf("examples/scatterphylo.pdf")
 
 

@@ -169,5 +169,5 @@ subset2 = [collect(1:3); collect(5:14)]
 x = ["Raw", "Effort"]
 y = ["tmin", "tmax", "tmean", "stl1", "stl2", "stl3", "stl4", "swvl1", "swvl2", "swvl3", "swvl4", "ssr", "tp"]
 lambdas = hcat(lambdas_1[subset], lambdas_2[subset2])
-heatmap(y, x, transpose(lambdas), seriescolor = cgrad([:red, :white, :blue]), colorbar = :legend, legend = :top, size = (900, 200), guidefontsize = 12, tickfontsize = 12, xrotation = 90, clim = (0, 1), colorbar_title = "λ")
+heatmap(y, x, transpose(lambdas), seriescolor = cgrad([:red, :white, :blue], [0, mean(lambdas), 1]), colorbar = :legend, legend = :top, size = (900, 200), guidefontsize = 12, tickfontsize = 12, xrotation = 90, clim = (0, 1), colorbar_title = "λ")
 Plots.pdf("Lambda_heatmap_institutions.pdf")
