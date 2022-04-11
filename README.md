@@ -1,6 +1,6 @@
 # ClimatePref
 
-*Package containing code for 'Strong phylogenetic signals in global plant climate preferences'*
+*Package containing code for 'Strong phylogenetic signals in global plant climate envelopes'*
 
 ## Summary
 
