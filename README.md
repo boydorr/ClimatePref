@@ -16,4 +16,4 @@
 
 This package is in alpha now, so please raise an issue if you find any problems.
 
-![](docs/tree.pdf)
+![](docs/tree.jpg)
