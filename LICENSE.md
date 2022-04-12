@@ -1,4 +1,4 @@
-Copyright (c) 2018-2021: Claire Harris
+Copyright (c) 2018-2022: Claire Harris
 
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions are
