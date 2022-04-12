@@ -14,8 +14,6 @@
 - The Plant List ([TPL](http://www.theplantlist.org))
 - Botanic Gardens Conservation International ([BGCI](https://www.bgci.org))
 - Enhanced Vegetation Index from [MODIS](https://modis.gsfc.nasa.gov)
-- Mega-phylogeney of Angiosperms from [Qian *et al.* 2016](https://doi.org/10.1093/jpe/rtv047)
-
-This package is in alpha now, so please raise an issue if you find any problems.
+- Mega-phylogeny of Angiosperms from [Qian *et al.* 2016](https://doi.org/10.1093/jpe/rtv047)
 
 ![](docs/tree.jpg)
