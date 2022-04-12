@@ -4,13 +4,13 @@
     "upload_type": "software",
     "creators": [
         {
-            "affiliation": "Biomathematics and Statstics Scotland",
+            "affiliation": "Biomathematics and Statistics Scotland",
             "name": "Harris, Claire",
             "orcid": "0000-0003-0852-2340"
         }
     ],
     "access_right": "open",
-    "license": "BSD 2 Clause",
+    "license": "BSD-2-Clause",
     "related_identifiers": [
         {
             "scheme": "url",
