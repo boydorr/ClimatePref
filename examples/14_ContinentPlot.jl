@@ -6,9 +6,8 @@ using JuliaDBMeta
 using Unitful
 using Unitful.DefaultSymbols
 using PhyloNetworks
-using MyUnitful
+using ClimatePref.Units
 using ClimatePref
-using Simulation
 using StatsBase
 using JLD
 using JLD2

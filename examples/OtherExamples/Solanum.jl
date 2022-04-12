@@ -3,7 +3,7 @@
 using Unitful
 using AxisArrays
 using ClimatePref
-using myunitful
+using ClimatePref.Units
 
 import Unitful: °, °C, mm
 import ArchGDAL

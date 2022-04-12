@@ -219,7 +219,7 @@ using Plots
 using OnlineStats
 using Unitful
 using Unitful.DefaultSymbols
-using MyUnitful
+using ClimatePref.Units
 pyplot()
 
 gbif = JuliaDB.load("GBIF_JOIN/CERA_JOIN_SIMPLE")

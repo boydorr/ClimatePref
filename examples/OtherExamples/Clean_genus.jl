@@ -2,7 +2,7 @@ addprocs(6)
 using Unitful
 using AxisArrays
 using ClimatePref
-using myunitful
+using ClimatePref.Units
 using Iterators
 @everywhere using JuliaDB
 using Unitful.DefaultSymbols
