@@ -1,5 +1,7 @@
 # ClimatePref
 
+[![DOI](https://zenodo.org/badge/480425198.svg)](https://zenodo.org/badge/latestdoi/480425198)
+
 *Package containing code for 'Strong phylogenetic signals in global plant climate envelopes'*
 
 ## Summary
@@ -16,4 +18,4 @@
 
 This package is in alpha now, so please raise an issue if you find any problems.
 
-![](docs/tree.pdf)
+![](docs/tree.jpg)
