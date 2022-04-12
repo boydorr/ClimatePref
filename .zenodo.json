@@ -1,0 +1,28 @@
+{
+    "title": "ClimatePref.jl",
+    "description": "Package containing code for 'Strong phylogenetic signals in global plant climate envelopes'",
+    "upload_type": "software",
+    "creators": [
+        {
+            "affiliation": "Biomathematics and Statstics Scotland",
+            "name": "Harris, Claire",
+            "orcid": "0000-0003-0852-2340"
+        }
+    ],
+    "access_right": "open",
+    "license": "BSD 2 Clause",
+    "related_identifiers": [
+        {
+            "scheme": "url",
+            "identifier": "https://github.com/boydorr/ClimatePref.jl",
+            "relation": "isIdenticalTo"
+        }
+    ],
+    "keywords": [
+        "climate",
+        "plants",
+        "phylogenetics",
+        "julia",
+        "ecology"
+    ]
+}
