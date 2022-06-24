@@ -1,4 +1,4 @@
-# 11. Phylogenetic analysis of plant climate preferences
+# 20. Phylogenetic analysis of plant climate preferences at different taxonomic levels
 using PhyloNetworks
 using GLM
 using JuliaDB
