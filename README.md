@@ -18,4 +18,4 @@
 
 ![](docs/tree.jpg)
 
-The plant bioclimatic envelopes extracted from this project can be found [here](https://catalogue.ceh.ac.uk/documents/ca339c86-3674-4030-b891-35326e71141e).
+The bioclimatic envelopes extracted for each species from this project can be found [here](https://catalogue.ceh.ac.uk/documents/ca339c86-3674-4030-b891-35326e71141e).
