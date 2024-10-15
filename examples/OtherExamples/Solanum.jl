@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: BSD-2-Clause
+
 #### SOLANUM EXAMPLES WITH WORLDCLIM DATA ####
 
 using Unitful
@@ -45,13 +47,14 @@ wind = readworldclim(joinpath(dir, "wc2.0_5m_wind"))
 bio = readbioclim(joinpath(dir, "wc2.0_5m_bio"))
 
 # Extract values from each of the rasters at solanum locations
-x = select(coords, :decimallongitude); y = select(coords, :decimallatitude)
-vals_tavg = extractvalues(x * °, y * °, tavg, 1month:1month:12month)
-vals_tmax = extractvalues(x * °, y * °, tmax, 1month:1month:12month)
-vals_prec = extractvalues(x * °, y * °, prec, 1month:1month:12month)
-vals_srad = extractvalues(x * °, y * °, srad, 1month:1month:12month)
-vals_vapr = extractvalues(x * °, y * °, vapr, 1month:1month:12month)
-vals_wind = extractvalues(x * °, y * °, wind, 1month:1month:12month)
+x = select(coords, :decimallongitude);
+y = select(coords, :decimallatitude);
+vals_tavg = extractvalues(x * °, y * °, tavg, (1month):(1month):(12month))
+vals_tmax = extractvalues(x * °, y * °, tmax, (1month):(1month):(12month))
+vals_prec = extractvalues(x * °, y * °, prec, (1month):(1month):(12month))
+vals_srad = extractvalues(x * °, y * °, srad, (1month):(1month):(12month))
+vals_vapr = extractvalues(x * °, y * °, vapr, (1month):(1month):(12month))
+vals_wind = extractvalues(x * °, y * °, wind, (1month):(1month):(12month))
 vals_bio = extractvalues(x * °, y * °, bio, 1:1:19)
 
 na_mean(x) = mean(x[.!isnan.(x)])
@@ -60,17 +63,17 @@ na_min(x) = minimum(x[.!isnan.(x)])
 na_var(x) = var(x[.!isnan.(x)])
 
 names = map(searchdir(dir, "wc2.0_5m_")) do str
-    Symbol(split(str, "wc2.0_5m_")[2])
+    return Symbol(split(str, "wc2.0_5m_")[2])
 end
 
 ## Run through 4 tester species and plot histograms of 6 worldclim
 ## variables for each
 
 spp_names = ["Solanum dulcamara", "Solanum nigrum", "Solanum americanum",
-"Solanum parvifolium"]
+    "Solanum parvifolium"]
 for i in spp_names
     # Select species and the id of the rows
-    spp = filter(p-> p[:species] == i, sol)
+    spp = filter(p -> p[:species] == i, sol)
     ids = select(spp, :id)
     # Select values for row ids from each variable
     res_prec = ustrip(vals_prec[ids])
@@ -116,9 +119,10 @@ for (i in 1:12){
     dev.off()
     }"
 # Plot example of worldclim data with some GBIF occurrence points
-pts = [x[1:4],y[1:4]]
+pts = [x[1:4], y[1:4]]
 thisstep = ustrip(step(axes(tavg.array, 1).val))
-@rput pts; @rput thisstep
+@rput pts;
+@rput thisstep;
 R"library(fields);
 #jpeg('plots/points.jpeg', height= 595, width=842)
 image.plot(seq(-180, 180, by=thisstep),
@@ -131,10 +135,10 @@ using StatPlots
 using StatsBase
 
 temps = collect(-67:1:44)
-tavg_tab = table(temps[2:end], names=[:temps])
+tavg_tab = table(temps[2:end], names = [:temps])
 for i in spp_names
     # Select species and the id of the rows
-    spp = filter(p-> p[:species] == i, sol)
+    spp = filter(p -> p[:species] == i, sol)
     ids = select(spp, :id)
     # Select values for row ids from each variable
     res_tavg = ustrip(vals_tavg[ids])
@@ -143,11 +147,11 @@ for i in spp_names
 end
 plotlyjs()
 anim = @animate for i in spp_names
-    spp = filter(p-> p[:species] == i, sol)
+    spp = filter(p -> p[:species] == i, sol)
     ids = select(spp, :id)
     # Select values for row ids from each variable
     res_tavg = ustrip(vals_tavg[ids])
     hist = fit(Histogram, res_tavg, temps)
     plot(hist)
 end
-gif(anim, "plots/test_gif.gif", fps=10)
+gif(anim, "plots/test_gif.gif", fps = 10)

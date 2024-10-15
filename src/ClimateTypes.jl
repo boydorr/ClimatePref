@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: BSD-2-Clause
+
 using AxisArrays
 using Unitful
 using ClimatePref.Units
@@ -22,7 +24,7 @@ mutable struct Worldclim <: AbstractClimate
     function Worldclim(array::AxisArray)
         size(array, 3) == 12 ||
             error("There should be 12 months of data for worldclim")
-        new(array)
+        return new(array)
     end
 end
 
@@ -36,7 +38,7 @@ mutable struct Bioclim <: AbstractClimate
     function Bioclim(array::AxisArray)
         size(array, 3) == 19 ||
             error("There should 19 climate variables for bioclim")
-        new(array)
+        return new(array)
     end
 end
 
@@ -48,9 +50,9 @@ Type that houses data extracted from ERA raster files.
 mutable struct ERA <: AbstractClimate
     array::AxisArray
     function ERA(array::AxisArray)
-        typeof(collect(axes(array, 3).val)[1])<: Unitful.Time ||
+        typeof(collect(axes(array, 3).val)[1]) <: Unitful.Time ||
             error("Third dimension of array must be time")
-        new(array)
+        return new(array)
     end
 end
 
@@ -62,9 +64,9 @@ Type that houses data extracted from CERA-20C raster files.
 mutable struct CERA <: AbstractClimate
     array::AxisArray
     function CERA(array::AxisArray)
-        typeof(collect(axes(array, 3).val)[1])<: Unitful.Time ||
+        typeof(collect(axes(array, 3).val)[1]) <: Unitful.Time ||
             error("Third dimension of array must be time")
-        new(array)
+        return new(array)
     end
 end
 
@@ -85,9 +87,9 @@ Type that houses data extracted from CRUTS raster files.
 mutable struct CRUTS <: AbstractClimate
     array::AxisArray
     function CRUTS(array::AxisArray)
-        typeof(collect(axes(array, 3).val)[1])<: Unitful.Time ||
+        typeof(collect(axes(array, 3).val)[1]) <: Unitful.Time ||
             error("Third dimension of array must be time")
-        new(array)
+        return new(array)
     end
 end
 
@@ -101,10 +103,9 @@ mutable struct CHELSA <: AbstractClimate
     function CHELSA(array::AxisArray)
         size(array, 3) == 12 ||
             error("There should be 12 months of data for CHELSA")
-        new(array)
+        return new(array)
     end
 end
-
 
 """
     TestERA()
@@ -113,7 +114,7 @@ Function that builds a test ERA dataset.
 """
 function TestERA()
     dir = dirname(pathof(ClimatePref)) * "/../test/Testdata/TestERA"
-    data = readERA(dir, "t2m", collect(1.0month:1month:10year))
+    data = readERA(dir, "t2m", collect((1.0month):(1month):(10year)))
     data.array = data.array[-10° .. 60°, 35° .. 80°, :]
     return data
 end

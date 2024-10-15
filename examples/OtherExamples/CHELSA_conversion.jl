@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: BSD-2-Clause
+
 using ClimatePref
 using Statistics
 using JuliaDB
@@ -16,7 +18,8 @@ dir = "CHELSA/ts"
 varlist = ["prec", "tmax", "tmean", "tmin"]
 aggfun = [sum, mean, mean, mean]
 for i in eachindex(varlist)
-    chelsa = readCHELSA(joinpath(dir, varlist[i]), varlist[i], res = 10, fn = aggfun[i])
+    chelsa = readCHELSA(joinpath(dir, varlist[i]), varlist[i], res = 10,
+                        fn = aggfun[i])
     chDB = ClimatePref.CHELSA_to_DB(chelsa)
     JuliaDB.save(chDB, joinpath(dir, varlist[i] * "DB"))
 end

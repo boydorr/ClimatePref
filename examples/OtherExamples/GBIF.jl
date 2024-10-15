@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: BSD-2-Clause
+
 using DataStructures
 #using ArrayViews
 using DataFrames
@@ -7,17 +9,24 @@ using RCall
 addprocs(1)
 @everywhere using JuliaDB
 latlon = loadndsparse("/Users/claireh/Documents/PhD/Data/GBIF/final",
-       indexcols = [:phylum, :class, :order, :family, :genus, :species, :scientificname],
-       type_detect_rows =5000, chunks = 1)
+                      indexcols = [
+                          :phylum,
+                          :class,
+                          :order,
+                          :family,
+                          :genus,
+                          :species,
+                          :scientificname
+                      ],
+                      type_detect_rows = 5000, chunks = 1)
 save(latlon, "/Users/claireh/Documents/PhD/Data/GBIF/store/latlon")
 #latlon = loadtable("/Users/claireh/Documents/PhD/Data/GBIF/CSV",
 #       indexcols = [:decimallatitude, :decimallongitude],usecache = false, type_detect_rows =5000)
 coords = select(latlon, :decimallatitude)
 
-latlon = readtable(
-  "/Users/claireh/Documents/PhD/Data/GBIF/0000274-170817152713382.csv",
-  nrows=100000, header=true, separator= '\t')
-sum(isna.(latlon[:decimallatitude]))/nrow(latlon)
+latlon = readtable("/Users/claireh/Documents/PhD/Data/GBIF/0000274-170817152713382.csv",
+                   nrows = 100000, header = true, separator = '\t')
+sum(isna.(latlon[:decimallatitude])) / nrow(latlon)
 
 coords = Array{Float64, 2}(latlon[[:decimallatitude, :decimallongitude]])
 acc = mapslices(points_accuracy, coords, 2)
@@ -39,17 +48,21 @@ r.c <- cut(least_resol,breaks=breaks)
 barplot(table(r.c), ylim=c(0,100000),
 names=c('0 - 100m','100 - 500m', '500m - 1km', '1 - 2km' ,
 '2 - 10km' ,' 10 - 50km' , '50 - 100km' , '100 - 150km'))"
-Species = OrderedDict(sort(collect(countmap(latlon[:species])), by=x->x[2], rev=true))
+Species = OrderedDict(sort(collect(countmap(latlon[:species])), by = x -> x[2],
+                           rev = true))
 
 #' Identify common species
 common = collect(keys(Species))[2:11]
 #' Identify rare (ish) species
 #' CR category in iucn is defined as 50 individuals or less
-critically_endangered = find(collect(values(Species)).> 5 .& collect(values(Species)) .< 50)
+critically_endangered = find(collect(values(Species)) .>
+                             5 .& collect(values(Species)) .< 50)
 ## sample ten of these randomly to match the common ones
 rare = collect(keys(Species))[sample(critically_endangered, 10)]
-coords_com = least_resol[vcat(map(x -> find(latlon[:species].== x), common)...),:]
-coords_rare = least_resol[vcat(map(x -> find(latlon[:species].== x), rare)...),:]
+coords_com = least_resol[vcat(map(x -> find(latlon[:species] .== x), common)...),
+                         :]
+coords_rare = least_resol[vcat(map(x -> find(latlon[:species] .== x), rare)...),
+                          :]
 
 @rput coords_com
 @rput coords_rare
@@ -113,7 +126,7 @@ function decimal_places(coord::Float64, max::Int64 = 10)
     while (abs(round(coord, dp) - coord) != 0)
         dp += 1
     end
-  dp
+    return dp
 end
 
 # Function that finds how many significant figures a coordinate has
@@ -125,13 +138,13 @@ end
 #'
 #' - The number of signficant figures
 function signif_figs(coord::Float64)
-  ## If you round the coordinate to a specific number of sf, does it equal itself?
-  coord = abs(coord)
-  sf = 1
-  while (abs(signif(coord, sf) - coord) != 0)
-      sf += 1
-  end
-  sf
+    ## If you round the coordinate to a specific number of sf, does it equal itself?
+    coord = abs(coord)
+    sf = 1
+    while (abs(signif(coord, sf) - coord) != 0)
+        sf += 1
+    end
+    return sf
 end
 #' Function that finds to what accuracy GPS locations
 #' have been written down to
@@ -145,76 +158,69 @@ end
 #' - The least accurate level the points were written to
 
 function points_accuracy(coords::Vector{Float64})
-  ## How many decimal places?
-  dp = map(decimal_places, coords)
-  ## How many significant figures?
-  sf = map(signif_figs, coords)
+    ## How many decimal places?
+    dp = map(decimal_places, coords)
+    ## How many significant figures?
+    sf = map(signif_figs, coords)
 
-  degrees = trunc.(coords)
-  mins = trunc.(map(x -> mod(x, 60), coords*60))
-  secs = map(x -> mod(x, 60), abs(coords)*3600)
+    degrees = trunc.(coords)
+    mins = trunc.(map(x -> mod(x, 60), coords * 60))
+    secs = map(x -> mod(x, 60), abs(coords) * 3600)
 
     if (any(mins .== 0) & any(secs .== 0))
-  ## If to any to no decimal places then is accurate to degrees
-      acc="deg"
+        ## If to any to no decimal places then is accurate to degrees
+        acc = "deg"
     elseif (abs(sf[1] - sf[2]) == 0 &
-           abs(dp[1] - dp[2]) > 0 &
-           all(sf .< 7))
-    ## If the number of significant figures are the same but decimals different then put down to sf
-    acc = string(sf[1],"sf")
-elseif (any(mins .> 0) &&
-           any(secs .== 0))
-    ## If accurate to a minute
-    acc = "min"
-elseif (any((round(secs) - secs) .== 0))
-    ## If accurate to a second
-    acc = "sec"
-  else
-    ## Find to what decimal place the point is recorded to
-    ## Or if lower than 5 decimal places then assign to lower
-    acc = ifelse(maximum(dp) > 5, "lower", string(maximum(dp), "dp"))
+                                  abs(dp[1] - dp[2]) > 0 &
+                                                       all(sf .< 7))
+        ## If the number of significant figures are the same but decimals different then put down to sf
+        acc = string(sf[1], "sf")
+    elseif (any(mins .> 0) &&
+            any(secs .== 0))
+        ## If accurate to a minute
+        acc = "min"
+    elseif (any((round(secs) - secs) .== 0))
+        ## If accurate to a second
+        acc = "sec"
+    else
+        ## Find to what decimal place the point is recorded to
+        ## Or if lower than 5 decimal places then assign to lower
+        acc = ifelse(maximum(dp) > 5, "lower", string(maximum(dp), "dp"))
     end
-    acc
+    return acc
 end
-
-
-
 
 function res(coords::Vector{Float64}, lat_eq::Float64 = 111.32)
-  lat = coords[1]
-  acc = points_accuracy(coords)
-  ## If degrees then find 1 degree at that lat/long
-  if (acc=="deg")
-  dist_lat = lat_eq
-  dist_long = abs(cos(lat)*lat_eq)
-  elseif (acc=="min")
-    abs(cos(lat)*lat_eq)
-    ## If minutes then find 1 minute at that lat/long
-    dist_lat  = lat_eq/60
-    dist_long = abs(cos(lat))*lat_eq/60
-  elseif (acc=="sec")
-    ## If seconds then find 1 second at that lat/long
-    dist_lat = lat_eq/3600
-    dist_long = abs(cos(lat))*lat_eq/3600
-  else
-    ## If other, then find to number of decimal places at that lat/long
-     dp = map(decimal_places, coords)
-     dist_lat = lat_eq/(10^dp[1])
-     dist_long = abs(cos(lat)*lat_eq)/(10^(dp[2]))
- end
-  ## Return a vector with precision of each coordinate (in km)
-  resolution = [dist_lat, dist_long]
-  resolution
+    lat = coords[1]
+    acc = points_accuracy(coords)
+    ## If degrees then find 1 degree at that lat/long
+    if (acc == "deg")
+        dist_lat = lat_eq
+        dist_long = abs(cos(lat) * lat_eq)
+    elseif (acc == "min")
+        abs(cos(lat) * lat_eq)
+        ## If minutes then find 1 minute at that lat/long
+        dist_lat = lat_eq / 60
+        dist_long = abs(cos(lat)) * lat_eq / 60
+    elseif (acc == "sec")
+        ## If seconds then find 1 second at that lat/long
+        dist_lat = lat_eq / 3600
+        dist_long = abs(cos(lat)) * lat_eq / 3600
+    else
+        ## If other, then find to number of decimal places at that lat/long
+        dp = map(decimal_places, coords)
+        dist_lat = lat_eq / (10^dp[1])
+        dist_long = abs(cos(lat) * lat_eq) / (10^(dp[2]))
+    end
+    ## Return a vector with precision of each coordinate (in km)
+    resolution = [dist_lat, dist_long]
+    return resolution
 end
-
 
 #' Function to find number in last decimal place
 #'
 function last_decimal(coord::Float64)
-  dp = decimal_places(coord, max=10)
-  ll = floor(coord*(10^dp))
-  (ll-floor(ll/(10))*(10))
+    dp = decimal_places(coord, max = 10)
+    ll = floor(coord * (10^dp))
+    return (ll - floor(ll / (10)) * (10))
 end
-
-
-TestSpecies =

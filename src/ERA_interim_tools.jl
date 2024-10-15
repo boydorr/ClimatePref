@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: BSD-2-Clause
+
 using .PyCall
 py"""
 from math import floor
@@ -49,6 +51,7 @@ def era_interim_request(
     })
 """
 
-function retrieve_era_interim(param::String, from_year::Int64, to_year::Int64, filename::String = "era_interim"; kws...)
-    py"retrieve_era_interim"(param, from_year, to_year, filename; kws...)
+function retrieve_era_interim(param::String, from_year::Int64, to_year::Int64,
+                              filename::String = "era_interim"; kws...)
+    return py"retrieve_era_interim"(param, from_year, to_year, filename; kws...)
 end

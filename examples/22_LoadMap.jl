@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: BSD-2-Clause
+
 using JuliaDB
 using ClimatePref
 using Unitful
@@ -8,12 +10,13 @@ gbif = load("GBIF_TPL_new")
 lat = collect(select(gbif, :decimallatitude))
 lon = collect(select(gbif, :decimallongitude))
 ref = create_reference(0.08983153)
-exclude = (lat .* ° .<= ref.array.axes[2].val[end]) .& (lon .* ° .< ref.array.axes[1].val[end])
+exclude = (lat .* ° .<= ref.array.axes[2].val[end]) .&
+          (lon .* ° .< ref.array.axes[1].val[end])
 refval = extractvalues(lon[exclude] .* °, lat[exclude] .* °, ref)
 fill!(ref.array, 0)
 
 for i in eachindex(refval)
-   ref.array[refval[i]] += 1
+    ref.array[refval[i]] += 1
 end
 ra = transpose(Array(ref.array))
 ra = ra[end:-1:1, :]

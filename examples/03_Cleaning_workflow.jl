@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: BSD-2-Clause
+
 # 3. Post-join cleaning for botanic gardens & country centroids
 using JuliaDB
 using JuliaDBMeta
@@ -21,18 +23,22 @@ gardens = loadtable("gardens.csv", chunks = 1)
 centroids = loadtable("Centroids.csv", chunks = 1)
 centroids = @transform centroids {Latitude = :y, Longitude = :x}
 
-coords = hcat(collect(select(gardens, :Latitude)), collect(select(gardens, :Longitude)))
+coords = hcat(collect(select(gardens, :Latitude)),
+              collect(select(gardens, :Longitude)))
 ref = create_reference(0.02)
 
 # Add in refval column to garden info of which reference grid square it falls in
-gardens = pushcol(gardens, :refval, extractvalues(coords[:, 2] * °, coords[:, 1] * °, ref))
+gardens = pushcol(gardens, :refval,
+                  extractvalues(coords[:, 2] * °, coords[:, 1] * °, ref))
 save(gardens, "Gardens")
 
-coords = hcat(collect(select(centroids, :Latitude)), collect(select(centroids, :Longitude)))
+coords = hcat(collect(select(centroids, :Latitude)),
+              collect(select(centroids, :Longitude)))
 ref = create_reference(0.02)
 
 # Add in refval column to garden info of which reference grid square it falls in
-centroids = pushcol(centroids, :refval, extractvalues(coords[:, 2] * °, coords[:, 1] * °, ref))
+centroids = pushcol(centroids, :refval,
+                    extractvalues(coords[:, 2] * °, coords[:, 1] * °, ref))
 save(centroids, "Centroids")
 
 # Load gbif data and add reference values for cleaning datasets
@@ -49,11 +55,11 @@ save(gbif, "GBIF_antijoin")
 gbif = load("GBIF_antijoin")
 
 gardens = load("Gardens")
-gbif = join(gbif, gardens, how=:anti, lkey=:refval, rkey =:refval)
+gbif = join(gbif, gardens, how = :anti, lkey = :refval, rkey = :refval)
 gbif = popcol(gbif, :refval)
 
 centroids = load("Centroids")
-gbif = join(gbif, centroids, how=:anti, lkey=:refval, rkey =:refval)
+gbif = join(gbif, centroids, how = :anti, lkey = :refval, rkey = :refval)
 gbif = popcol(gbif, :refval)
 
 # Alternative to anti-join using filtering
@@ -82,7 +88,8 @@ gbif = pushcol(gbif, :SppID, sppids)
 
 # Save reversal of species dict for later analyses
 sppdict = Dict(zip(collect(1:length(uniquespp)), uniquespp))
-JLD.save("Species_names.jld", "spp_names", uniquespp, "spp_ids", collect(1:length(uniquespp)))
+JLD.save("Species_names.jld", "spp_names", uniquespp, "spp_ids",
+         collect(1:length(uniquespp)))
 
 # Create date column
 mth = collect(select(gbif, :month))
@@ -111,21 +118,21 @@ using DataFrames
 gbif = load("/home/claireh/Documents/gbif/full_data/GBIF_filtered/")
 institutions = collect(JuliaDB.select(gbif, :institutioncode))
 inst_count = countmap(institutions)
-top100 = sort(collect(inst_count), by = x->x[2], rev = true)[2:101]
+top100 = sort(collect(inst_count), by = x -> x[2], rev = true)[2:101]
 t = DataFrame(collect(top100))
 rename!(t, [:Institution, :NumRecords])
 CSV.write("Top_institutions.csv", t)
-sum(map(x->x[2], top100))*100/length(gbif) # Roughly 65% of data here
+sum(map(x -> x[2], top100)) * 100 / length(gbif) # Roughly 65% of data here
 
 gbif = pushcol(gbif, :UID, 1:length(gbif))
 gbif_fil = filter(g -> g.institutioncode ∈ t[!, :Institution], gbif)
 JuliaDB.save(gbif_fil, "GBIF_top_institutes")
 
 # Explore the 25% that have no institution code
-gbif_no_inst = filter(g -> g.institutioncode =="", gbif)
+gbif_no_inst = filter(g -> g.institutioncode == "", gbif)
 recorded = collect(select(gbif_no_inst, :recordedby))
-toprecorders = sort(collect(countmap(recorded)), by = x->x[2], rev = true)
-top1000recorders = filter(x-> x[2] >= 1000, toprecorders)
+toprecorders = sort(collect(countmap(recorded)), by = x -> x[2], rev = true)
+top1000recorders = filter(x -> x[2] >= 1000, toprecorders)
 trec = DataFrame(collect(top1000recorders))
 rename!(trec, [:RecordedBy, :NumRecords])
 CSV.write("Top_recorders.csv", trec)

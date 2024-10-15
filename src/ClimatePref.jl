@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: BSD-2-Clause
+
 module ClimatePref
 
 using Requires
@@ -18,7 +20,7 @@ using Unitful: @unit
 day = Unitful.d
 week = Unitful.wk
 year = Unitful.yr
-@unit month "month" Month 2.628e6 * Unitful.s false
+@unit month "month" Month 2.628e6*Unitful.s false
 
 const days = day
 const weeks = week
@@ -40,12 +42,12 @@ const December = 11months
 const localunits = Unitful.basefactors
 function __init__()
     merge!(Unitful.basefactors, localunits)
-    Unitful.register(Units)
+    return Unitful.register(Units)
 end
 
 export day, days, week, weeks, month, months, year, years, Rates,
-January, February, March, April, May, June, July, August,
-September, October, November, December
+       January, February, March, April, May, June, July, August,
+       September, October, November, December
 
 end
 
@@ -53,7 +55,8 @@ include("ClimateTypes.jl")
 export Worldclim, Bioclim, ERA, CERA, Reference
 
 include("ReadData.jl")
-export read, searchdir, readworldclim, readbioclim, readERA, readCERA, readfile, readCHELSA
+export read, searchdir, readworldclim, readbioclim, readERA, readCERA, readfile,
+       readCHELSA
 
 include("ReadGBIF.jl")
 export ReadGBIF
@@ -66,7 +69,7 @@ export extractvalues
 
 include("DataCleaning.jl")
 export create_reference, gardenmask, genus_worldclim_average,
-    genus_worldclim_monthly, upresolution, downresolution, mask
+       genus_worldclim_monthly, upresolution, downresolution, mask
 
 include("Conversion.jl")
 export worldclim_to_DB, era_to_DB, CHELSA_to_DB
@@ -78,6 +81,7 @@ include("PhyloModels.jl")
 export Brownian, Lambda, fitBrownian, fitLambda, varcovar
 
 include("PhyloMethods.jl")
-export adjust, adjust_percentile, fitLambdas, fitMissings, rawData, adjustData, extractContinents
+export adjust, adjust_percentile, fitLambdas, fitMissings, rawData, adjustData,
+       extractContinents
 
 end

@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: BSD-2-Clause
+
 # 15. Convert worldclim data to JuliaDB format
 
 using Unitful
@@ -16,15 +18,21 @@ vapr = readworldclim(joinpath(dir, "wc2.0_5m_vapr"))
 wind = readworldclim(joinpath(dir, "wc2.0_5m_wind"))
 bio = readbioclim(joinpath(dir, "wc2.0_5m_bio"))
 
-
 worldclim_to_DB(tavg)
-
 
 using ClimatePref
 using ClimatePref.Units
 using JuliaDB
 folder = "wc2.0_5m"
-files = ["wc2.0_5m_tavg", "wc2.0_5m_tmax", "wc2.0_5m_tmin", "wc2.0_5m_prec", "wc2.0_5m_srad", "wc2.0_5m_vapr", "wc2.0_5m_wind"]
+files = [
+    "wc2.0_5m_tavg",
+    "wc2.0_5m_tmax",
+    "wc2.0_5m_tmin",
+    "wc2.0_5m_prec",
+    "wc2.0_5m_srad",
+    "wc2.0_5m_vapr",
+    "wc2.0_5m_wind"
+]
 params = ["tavg", "tmax", "tmin", "prec", "srad", "vapr", "wind"]
 for i in eachindex(files)
     wc = readworldclim(joinpath(folder, files[i]))

@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: BSD-2-Clause
+
 using ClimatePref.Units
 using ClimatePref
 using Simulation
@@ -6,15 +8,18 @@ using Unitful
 using Unitful.DefaultSymbols
 using AxisArrays
 using Profile
-function create_eco(numSpecies::Int64, grid::Tuple{Int64, Int64}, area::Unitful.Area{Float64}, totalK::Unitful.Quantity{Float64}, req::Unitful.Quantity{Float64}, individuals::Int64)
+function create_eco(numSpecies::Int64, grid::Tuple{Int64, Int64},
+                    area::Unitful.Area{Float64},
+                    totalK::Unitful.Quantity{Float64},
+                    req::Unitful.Quantity{Float64}, individuals::Int64)
     # Set up initial parameters for ecosystem
 
     # Set up how much energy each species consumes
     energy_vec = SolarRequirement(fill(req, numSpecies))
     #energy_vec = SimpleRequirement([2.0])
     # Set probabilities
-    birth = 0.6/year
-    death = 0.6/year
+    birth = 0.6 / year
+    death = 0.6 / year
     l = 1.0
     s = 0.0
     boost = 1.0
@@ -39,15 +44,15 @@ function create_eco(numSpecies::Int64, grid::Tuple{Int64, Int64}, area::Unitful.
     native = fill(true, numSpecies)
     abun = rand(Multinomial(individuals, numSpecies))
     sppl = SpeciesList(numSpecies, traits, abun, energy_vec,
-        movement, param, native)
+                       movement, param, native)
     abenv = simplehabitatAE(274.0K, grid, totalK, area)
     rel = Gauss{typeof(1.0K)}()
-    eco = Ecosystem(sppl,abenv,rel)
+    return eco = Ecosystem(sppl, abenv, rel)
 end
 function runsim(eco::Ecosystem, times::Unitful.Time, reps::Int64)
     interval = 1month
     timestep = 1month
-    lensim = length(0month:interval:times)
+    lensim = length((0month):interval:times)
     abun = generate_storage(eco, lensim, reps)
     totalK = sum(eco.abenv.budget.matrix)
     grid = size(eco.abenv.habitat.matrix)
@@ -62,33 +67,47 @@ function runsim(eco::Ecosystem, times::Unitful.Time, reps::Int64)
     return abun
 end
 
-function plot_abun(abun::Array{Int64, 4}, grd::Tuple{Int64, Int64}, spp::UnitRange{Int64} = 1:size(abun,1), thin::Int64=size(abun, 4))
+function plot_abun(abun::Array{Int64, 4}, grd::Tuple{Int64, Int64},
+                   spp::UnitRange{Int64} = 1:size(abun, 1),
+                   thin::Int64 = size(abun, 4))
     pick = rand(1:size(abun, 4), thin)
-    if size(abun, 2) >16
+    if size(abun, 2) > 16
         abun = mapslices(sum, abun, dims = 2)
-        grd = (1,1)
+        grd = (1, 1)
     end
     for k in 1:size(abun, 2)
         for n in spp
-            if k ==1 && n == spp[1]
-                display(plot(abun[1,k,:,pick], ylabel = "Abundance", xlabel = "Months", label="", grid = false, color = :($k), linealpha = 0.1, layout = grd, subplot = k,
-                ylim = (0, maximum(abun))))
+            if k == 1 && n == spp[1]
+                display(plot(abun[1, k, :, pick], ylabel = "Abundance",
+                             xlabel = "Months", label = "", grid = false,
+                             color = :($k), linealpha = 0.1, layout = grd,
+                             subplot = k,
+                             ylim = (0, maximum(abun))))
             else
-                display(plot!(abun[n,k,:,pick], ylabel = "Abundance", xlabel = "Months", label="", color = :($k), linealpha = 0.1, grid = false, subplot=k, ylim = (0, maximum(abun))))
+                display(plot!(abun[n, k, :, pick], ylabel = "Abundance",
+                              xlabel = "Months", label = "", color = :($k),
+                              linealpha = 0.1, grid = false, subplot = k,
+                              ylim = (0, maximum(abun))))
             end
         end
     end
 end
 
-
-function plot_abun(abun::Array{Int64, 4}, spp::Int64, thin::Int64=size(abun, 4))
+function plot_abun(abun::Array{Int64, 4}, spp::Int64,
+                   thin::Int64 = size(abun, 4))
     pick = rand(1:size(abun, 4), thin)
     for k in 1:size(abun, 2)
-        if k ==1
-            display(plot(abun[spp,k,:,pick], ylabel = "Abundance", xlabel = "Months", label="", grid = false, color = :($k), linealpha = 0.1, layout = grd, subplot = k,
-            ylim = (0, maximum(abun))))
+        if k == 1
+            display(plot(abun[spp, k, :, pick], ylabel = "Abundance",
+                         xlabel = "Months", label = "", grid = false,
+                         color = :($k), linealpha = 0.1, layout = grd,
+                         subplot = k,
+                         ylim = (0, maximum(abun))))
         else
-            display(plot!(abun[spp,k,:,pick], ylabel = "Abundance", xlabel = "Months", label="", color = :($k), linealpha = 0.1, grid = false, subplot=k, ylim = (0, maximum(abun))))
+            display(plot!(abun[spp, k, :, pick], ylabel = "Abundance",
+                          xlabel = "Months", label = "", color = :($k),
+                          linealpha = 0.1, grid = false, subplot = k,
+                          ylim = (0, maximum(abun))))
         end
     end
 end

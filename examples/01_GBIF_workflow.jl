@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: BSD-2-Clause
+
 # 1. Clean GBIF ready for joining with The Plant List
 using ClimatePref
 using JuliaDB
@@ -9,7 +11,8 @@ gbif = ReadGBIF("final")
 save(gbif, "Full_GBIF")
 
 # Filter out those records missing coordinates
-gbif = filter(g -> !ismissing(g.decimallatitude) & !ismissing(g.decimallongitude), gbif)
+gbif = filter(g -> !ismissing(g.decimallatitude) &
+                   !ismissing(g.decimallongitude), gbif)
 save(gbif, "Geo_GBIF")
 
 # Extract grid info for each record (used to match to ERA data later)

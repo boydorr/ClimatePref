@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: BSD-2-Clause
+
 # 2. Script to clean GBIF occurrences by plant list
 using JuliaDB
 using ClimatePref
@@ -14,7 +16,7 @@ Base.GC.enable(true)
 # Load gbif (make sure reindexed for quicker joins)
 gbif = load("gbif/full_data/Era_GBIF")
 # Join gbif/tpl to include only species in both tables
-gbif_tpl = join(gbif, tpl, how = :inner, lkey = :species, rkey =:species)
+gbif_tpl = join(gbif, tpl, how = :inner, lkey = :species, rkey = :species)
 save(gbif_tpl, "GBIF_TPL")
 
 # If joins take up too much space on device - this is an alternative option using filter

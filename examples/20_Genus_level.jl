@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: BSD-2-Clause
+
 # 20. Phylogenetic analysis of plant climate preferences at different taxonomic levels
 using PhyloNetworks
 using GLM
@@ -21,7 +23,9 @@ using DataFrames
 # Get record IDs of records without citizen science
 gbif = JuliaDB.load("/home/claireh/Documents/gbif/full_data/GBIF_filtered/")
 gbif = pushcol(gbif, :UID, 1:length(gbif))
-taxonomy = unique(collect(JuliaDB.select(gbif, (:species, :genus, :family, :order, :class, :phylum, :UID))))
+taxonomy = unique(collect(JuliaDB.select(gbif,
+                                         (:species, :genus, :family, :order,
+                                          :class, :phylum, :UID))))
 taxonomy = table(taxonomy)
 JuliaDB.save(taxonomy, "Taxonomy")
 
@@ -30,16 +34,16 @@ cera_records = JuliaDB.load("CERA_JOIN_SIMPLE")
 #recordID = JLD.load("Record_ID_no_citizen_science.jld", "recordID")
 taxonomy = JuliaDB.load("Taxonomy")
 taxonomy = distribute(taxonomy, 1)
-cera_taxo = JuliaDB.join(cera_records, taxonomy, how=:left, rkey = :UID, lkey = :UID)
+cera_taxo = JuliaDB.join(cera_records, taxonomy, how = :left, rkey = :UID,
+                         lkey = :UID)
 JuliaDB.save(cera_taxo, "CERA_taxo")
-
 
 cera_taxo = JuliaDB.load("CERA_taxo")
 taxonomy = JuliaDB.load("Taxonomy")
 taxonomy = distribute(taxonomy, 1)
-taxo_fil = filter(t->t.species ∈ tip_names, taxonomy)
+taxo_fil = filter(t -> t.species ∈ tip_names, taxonomy)
 big_genera = @groupby taxonomy :genus {nspp = length(unique(:species))}
-big_genera = filter(b->b.nspp > 50, big_genera)
+big_genera = filter(b -> b.nspp > 50, big_genera)
 
 big_genera = JuliaDB.load("Big_genera")
 ## Genus loop ##
@@ -57,27 +61,71 @@ for i in eachindex(genera)
     spp_names = collect(JuliaDB.select(genus, :species))
     cross_species = spp_names ∩ tip_names
 
-    genus_fil = filter(g->g.species in cross_species, genus)
+    genus_fil = filter(g -> g.species in cross_species, genus)
     missing_species = setdiff(tip_names, cross_species)
     for i in eachindex(missing_species)
         deleteleaf!(tree, join(split(missing_species[i], " "), "_"))
     end
-    
+
     # Group gbif data by Species ID and get mean and percentiles of data
-    phylo_traits = @groupby genus_fil :species {tmin = mean(ustrip(:tmin)), tmax = mean(ustrip(:tmax)), tmean = mean(ustrip(:tmean)), trng = mean(ustrip(:trng)), stl1 = mean(ustrip(:stl1mean)), stl2 = mean(ustrip(:stl2mean)), stl3 = mean(ustrip(:stl3mean)), stl4 = mean(ustrip(:stl4mean)), swvl1 = mean(ustrip(:swvl1mean)), swvl2 = mean(ustrip(:swvl2mean)), swvl3 = mean(ustrip(:swvl3mean)), swvl4 = mean(ustrip(:swvl4mean)), ssr = mean(ustrip(:ssrmean)), tp = mean(ustrip(:tpmean))}
+    phylo_traits = @groupby genus_fil :species {tmin = mean(ustrip(:tmin)),
+                                                tmax = mean(ustrip(:tmax)),
+                                                tmean = mean(ustrip(:tmean)),
+                                                trng = mean(ustrip(:trng)),
+                                                stl1 = mean(ustrip(:stl1mean)),
+                                                stl2 = mean(ustrip(:stl2mean)),
+                                                stl3 = mean(ustrip(:stl3mean)),
+                                                stl4 = mean(ustrip(:stl4mean)),
+                                                swvl1 = mean(ustrip(:swvl1mean)),
+                                                swvl2 = mean(ustrip(:swvl2mean)),
+                                                swvl3 = mean(ustrip(:swvl3mean)),
+                                                swvl4 = mean(ustrip(:swvl4mean)),
+                                                ssr = mean(ustrip(:ssrmean)),
+                                                tp = mean(ustrip(:tpmean))}
 
     # Add in tip names to data and save
-    phylo_traits = @transform phylo_traits {tipNames = join.(split.(:species, " "), "_")}
+    phylo_traits = @transform phylo_traits {tipNames = join.(split.(:species,
+                                                                    " "), "_")}
 
     # Convert to dataframe
     dat = DataFrame(collect(phylo_traits))
 
     # Fit lambda models and save
-    lambdas = fitLambdas(tree, dat, names(dat)[2:end-1], 0.1)
+    lambdas = fitLambdas(tree, dat, names(dat)[2:(end - 1)], 0.1)
     JLD.save("Lambdas_genus_$(genera[i]).jld", "lambdas", lambdas)
 
-    mins = [197.0K, 197.0K, 197.0K, 0K, 197.0K, 197.0K, 197.0K, 197.0K, 0.0m^3, 0.0m^3, 0.0m^3, 0.0m^3, 0.0J/m^2, 0.0m]
-    maxs = [320.0K, 320.0K, 320.0K, 80K, 320.0K, 320.0K, 320.0K, 320.0K, 1.0m^3, 1.0m^3, 1.0m^3, 1.0m^3, 3.0e7J/m^2, 0.1m]
+    mins = [
+        197.0K,
+        197.0K,
+        197.0K,
+        0K,
+        197.0K,
+        197.0K,
+        197.0K,
+        197.0K,
+        0.0m^3,
+        0.0m^3,
+        0.0m^3,
+        0.0m^3,
+        0.0J / m^2,
+        0.0m
+    ]
+    maxs = [
+        320.0K,
+        320.0K,
+        320.0K,
+        80K,
+        320.0K,
+        320.0K,
+        320.0K,
+        320.0K,
+        1.0m^3,
+        1.0m^3,
+        1.0m^3,
+        1.0m^3,
+        3.0e7J / m^2,
+        0.1m
+    ]
 
     # Load EVi and gbif counts
     total_evi_counts = JLD.load("Total_evi_counts.jld", "total")
@@ -89,14 +137,93 @@ for i in eachindex(genera)
     adjustment[isinf.(adjustment)] .= 1
 
     # Apply adjustment to data grouped by Species ID
-    phylo_traits_adj = @groupby genus_fil :species {tmin = adjust(uconvert.(K, :tmin), adjustment[:, 1], mins[1], maxs[1]),tmax = adjust(uconvert.(K, :tmax), adjustment[:, 2], mins[2], maxs[2]), tmean = adjust(uconvert.(K, :tmean), adjustment[:, 3], mins[3], maxs[3]), trng = adjust(uconvert.(K, :trng), adjustment[:, 4], mins[4], maxs[4]), stl1 = adjust(uconvert.(K, :stl1mean), adjustment[:, 5], mins[5], maxs[5]), stl2 = adjust(uconvert.(K, :stl2mean), adjustment[:, 6], mins[6], maxs[6]), stl3 = adjust(uconvert.(K, :stl3mean), adjustment[:, 7], mins[7], maxs[7]), stl4 = adjust(uconvert.(K, :stl4mean), adjustment[:, 8], mins[8], maxs[8]), swvl1 = adjust(:swvl1mean, adjustment[:, 9], mins[9], maxs[9]), swvl2 =  adjust(:swvl2mean, adjustment[:, 10], mins[10], maxs[10]), swvl3 =  adjust(:swvl3mean, adjustment[:, 11], mins[11], maxs[11]), swvl4 =  adjust(:swvl4mean, adjustment[:, 12], mins[12], maxs[12]), ssr =  adjust(:ssrmean, adjustment[:, 13], mins[13], maxs[13]), tp =  adjust(:tpmean, adjustment[:, 14], mins[14], maxs[14])}
-    phylo_traits_adj = @transform phylo_traits_adj {tipNames = join.(split.(:species, " "), "_")}
+    phylo_traits_adj = @groupby genus_fil :species {tmin = adjust(uconvert.(K,
+                                                                            :tmin),
+                                                                  adjustment[:,
+                                                                             1],
+                                                                  mins[1],
+                                                                  maxs[1]),
+                                                    tmax = adjust(uconvert.(K,
+                                                                            :tmax),
+                                                                  adjustment[:,
+                                                                             2],
+                                                                  mins[2],
+                                                                  maxs[2]),
+                                                    tmean = adjust(uconvert.(K,
+                                                                             :tmean),
+                                                                   adjustment[:,
+                                                                              3],
+                                                                   mins[3],
+                                                                   maxs[3]),
+                                                    trng = adjust(uconvert.(K,
+                                                                            :trng),
+                                                                  adjustment[:,
+                                                                             4],
+                                                                  mins[4],
+                                                                  maxs[4]),
+                                                    stl1 = adjust(uconvert.(K,
+                                                                            :stl1mean),
+                                                                  adjustment[:,
+                                                                             5],
+                                                                  mins[5],
+                                                                  maxs[5]),
+                                                    stl2 = adjust(uconvert.(K,
+                                                                            :stl2mean),
+                                                                  adjustment[:,
+                                                                             6],
+                                                                  mins[6],
+                                                                  maxs[6]),
+                                                    stl3 = adjust(uconvert.(K,
+                                                                            :stl3mean),
+                                                                  adjustment[:,
+                                                                             7],
+                                                                  mins[7],
+                                                                  maxs[7]),
+                                                    stl4 = adjust(uconvert.(K,
+                                                                            :stl4mean),
+                                                                  adjustment[:,
+                                                                             8],
+                                                                  mins[8],
+                                                                  maxs[8]),
+                                                    swvl1 = adjust(:swvl1mean,
+                                                                   adjustment[:,
+                                                                              9],
+                                                                   mins[9],
+                                                                   maxs[9]),
+                                                    swvl2 = adjust(:swvl2mean,
+                                                                   adjustment[:,
+                                                                              10],
+                                                                   mins[10],
+                                                                   maxs[10]),
+                                                    swvl3 = adjust(:swvl3mean,
+                                                                   adjustment[:,
+                                                                              11],
+                                                                   mins[11],
+                                                                   maxs[11]),
+                                                    swvl4 = adjust(:swvl4mean,
+                                                                   adjustment[:,
+                                                                              12],
+                                                                   mins[12],
+                                                                   maxs[12]),
+                                                    ssr = adjust(:ssrmean,
+                                                                 adjustment[:,
+                                                                            13],
+                                                                 mins[13],
+                                                                 maxs[13]),
+                                                    tp = adjust(:tpmean,
+                                                                adjustment[:,
+                                                                           14],
+                                                                mins[14],
+                                                                maxs[14])}
+    phylo_traits_adj = @transform phylo_traits_adj {tipNames = join.(split.(:species,
+                                                                            " "),
+                                                                     "_")}
 
     # Convert to dataframe
     dat = DataFrame(collect(phylo_traits_adj))
 
     # Fit lambda models and save
-    lambdas = fitLambdas(tree, dat, names(dat)[2:end-1], 0.1)
+    lambdas = fitLambdas(tree, dat, names(dat)[2:(end - 1)], 0.1)
     JLD.save("Lambdas_effort_genus_$(genera[i]).jld", "lambdas", lambdas)
 end
 
@@ -135,25 +262,29 @@ end
 lambdas_k = JLD.load("data/Lambdas_common_full.jld", "lambdas")
 
 tmin = DataFrame(λ = lambdas[:, 1], type = fill("genus", length(genera)))
-tmin = [tmin; DataFrame(λ = lambdas_f[:, 1], type = fill("family", length(families)))]
-tmin = [tmin; DataFrame(λ = lambdas_o[:, 1], type = fill("order", length(orders)))]
-tmin = [tmin; DataFrame(λ = lambdas_c[:, 1], type = fill("class", length(classes)))]
+tmin = [tmin;
+        DataFrame(λ = lambdas_f[:, 1], type = fill("family", length(families)))]
+tmin = [tmin;
+        DataFrame(λ = lambdas_o[:, 1], type = fill("order", length(orders)))]
+tmin = [tmin;
+        DataFrame(λ = lambdas_c[:, 1], type = fill("class", length(classes)))]
 tmin = [tmin; DataFrame(λ = lambdas_k[1], type = "kingdom")]
 
-scatter(tmin[!, :type], tmin[!, :λ], zcolor = tmin[!, :λ],  m = cgrad([:red, :white, :blue], [0, 0.5, 1]), label = "")
-plot!(["genus", "family", "order", "class"], [mean(lambdas), mean(lambdas_f), mean(lambdas_o), mean(lambdas_c)],
-colour = :black, label = "")
+scatter(tmin[!, :type], tmin[!, :λ], zcolor = tmin[!, :λ],
+        m = cgrad([:red, :white, :blue], [0, 0.5, 1]), label = "")
+plot!(["genus", "family", "order", "class"],
+      [mean(lambdas), mean(lambdas_f), mean(lambdas_o), mean(lambdas_c)],
+      colour = :black, label = "")
 plot!(["class", "kingdom"], [mean(lambdas_c), lambdas_k[1]], linestyle = :dash,
-colour = :black, label = "")
+      colour = :black, label = "")
 Plots.pdf("examples/scatterphylo.pdf")
-
 
 cera_taxo = JuliaDB.load("CERA_taxo")
 taxonomy = JuliaDB.load("Taxonomy")
 taxonomy = distribute(taxonomy, 12)
-taxo_fil = filter(t->t.species ∈ tip_names, taxonomy)
+taxo_fil = filter(t -> t.species ∈ tip_names, taxonomy)
 big_family = @groupby taxo_fil :family {nspp = length(unique(:species))}
-big_family= filter(b->b.nspp > 50, big_family)
+big_family = filter(b -> b.nspp > 50, big_family)
 JuliaDB.save(big_family, "Big_family")
 
 big_family = JuliaDB.load("Big_family")
@@ -172,31 +303,75 @@ for i in eachindex(families)
     spp_names = collect(JuliaDB.select(family, :species))
     cross_species = spp_names ∩ tip_names
 
-    family_fil = filter(g->g.species in cross_species, family)
+    family_fil = filter(g -> g.species in cross_species, family)
     missing_species = setdiff(tip_names, cross_species)
     for i in eachindex(missing_species)
         deleteleaf!(tree, join(split(missing_species[i], " "), "_"))
     end
-    
+
     # Group gbif data by Species ID and get mean and percentiles of data
-    phylo_traits = @groupby family_fil :species {tmin = mean(ustrip(:tmin)), tmax = mean(ustrip(:tmax)), tmean = mean(ustrip(:tmean)), trng = mean(ustrip(:trng)), stl1 = mean(ustrip(:stl1mean)), stl2 = mean(ustrip(:stl2mean)), stl3 = mean(ustrip(:stl3mean)), stl4 = mean(ustrip(:stl4mean)), swvl1 = mean(ustrip(:swvl1mean)), swvl2 = mean(ustrip(:swvl2mean)), swvl3 = mean(ustrip(:swvl3mean)), swvl4 = mean(ustrip(:swvl4mean)), ssr = mean(ustrip(:ssrmean)), tp = mean(ustrip(:tpmean))}
+    phylo_traits = @groupby family_fil :species {tmin = mean(ustrip(:tmin)),
+                                                 tmax = mean(ustrip(:tmax)),
+                                                 tmean = mean(ustrip(:tmean)),
+                                                 trng = mean(ustrip(:trng)),
+                                                 stl1 = mean(ustrip(:stl1mean)),
+                                                 stl2 = mean(ustrip(:stl2mean)),
+                                                 stl3 = mean(ustrip(:stl3mean)),
+                                                 stl4 = mean(ustrip(:stl4mean)),
+                                                 swvl1 = mean(ustrip(:swvl1mean)),
+                                                 swvl2 = mean(ustrip(:swvl2mean)),
+                                                 swvl3 = mean(ustrip(:swvl3mean)),
+                                                 swvl4 = mean(ustrip(:swvl4mean)),
+                                                 ssr = mean(ustrip(:ssrmean)),
+                                                 tp = mean(ustrip(:tpmean))}
 
     # Add in tip names to data and save
-    phylo_traits = @transform phylo_traits {tipNames = join.(split.(:species, " "), "_")}
+    phylo_traits = @transform phylo_traits {tipNames = join.(split.(:species,
+                                                                    " "), "_")}
 
     # Convert to dataframe
     dat = DataFrame(collect(phylo_traits))
 
     # Fit lambda models and save
-    try 
-    lambdas = fitLambdas(tree, dat, names(dat)[2:end-1], 0.1)
-    JLD.save("Lambdas_family_$(families[i]).jld", "lambdas", lambdas)
-    catch 
+    try
+        lambdas = fitLambdas(tree, dat, names(dat)[2:(end - 1)], 0.1)
+        JLD.save("Lambdas_family_$(families[i]).jld", "lambdas", lambdas)
+    catch
         continue
     end
 
-    mins = [197.0K, 197.0K, 197.0K, 0K, 197.0K, 197.0K, 197.0K, 197.0K, 0.0m^3, 0.0m^3, 0.0m^3, 0.0m^3, 0.0J/m^2, 0.0m]
-    maxs = [320.0K, 320.0K, 320.0K, 80K, 320.0K, 320.0K, 320.0K, 320.0K, 1.0m^3, 1.0m^3, 1.0m^3, 1.0m^3, 3.0e7J/m^2, 0.1m]
+    mins = [
+        197.0K,
+        197.0K,
+        197.0K,
+        0K,
+        197.0K,
+        197.0K,
+        197.0K,
+        197.0K,
+        0.0m^3,
+        0.0m^3,
+        0.0m^3,
+        0.0m^3,
+        0.0J / m^2,
+        0.0m
+    ]
+    maxs = [
+        320.0K,
+        320.0K,
+        320.0K,
+        80K,
+        320.0K,
+        320.0K,
+        320.0K,
+        320.0K,
+        1.0m^3,
+        1.0m^3,
+        1.0m^3,
+        1.0m^3,
+        3.0e7J / m^2,
+        0.1m
+    ]
 
     # Load EVi and gbif counts
     total_evi_counts = JLD.load("Total_evi_counts.jld", "total")
@@ -208,30 +383,106 @@ for i in eachindex(families)
     adjustment[isinf.(adjustment)] .= 1
 
     # Apply adjustment to data grouped by Species ID
-    phylo_traits_adj = @groupby family_fil :species {tmin = adjust(uconvert.(K, :tmin), adjustment[:, 1], mins[1], maxs[1]),tmax = adjust(uconvert.(K, :tmax), adjustment[:, 2], mins[2], maxs[2]), tmean = adjust(uconvert.(K, :tmean), adjustment[:, 3], mins[3], maxs[3]), trng = adjust(uconvert.(K, :trng), adjustment[:, 4], mins[4], maxs[4]), stl1 = adjust(uconvert.(K, :stl1mean), adjustment[:, 5], mins[5], maxs[5]), stl2 = adjust(uconvert.(K, :stl2mean), adjustment[:, 6], mins[6], maxs[6]), stl3 = adjust(uconvert.(K, :stl3mean), adjustment[:, 7], mins[7], maxs[7]), stl4 = adjust(uconvert.(K, :stl4mean), adjustment[:, 8], mins[8], maxs[8]), swvl1 = adjust(:swvl1mean, adjustment[:, 9], mins[9], maxs[9]), swvl2 =  adjust(:swvl2mean, adjustment[:, 10], mins[10], maxs[10]), swvl3 =  adjust(:swvl3mean, adjustment[:, 11], mins[11], maxs[11]), swvl4 =  adjust(:swvl4mean, adjustment[:, 12], mins[12], maxs[12]), ssr =  adjust(:ssrmean, adjustment[:, 13], mins[13], maxs[13]), tp =  adjust(:tpmean, adjustment[:, 14], mins[14], maxs[14])}
-    phylo_traits_adj = @transform phylo_traits_adj {tipNames = join.(split.(:species, " "), "_")}
+    phylo_traits_adj = @groupby family_fil :species {tmin = adjust(uconvert.(K,
+                                                                             :tmin),
+                                                                   adjustment[:,
+                                                                              1],
+                                                                   mins[1],
+                                                                   maxs[1]),
+                                                     tmax = adjust(uconvert.(K,
+                                                                             :tmax),
+                                                                   adjustment[:,
+                                                                              2],
+                                                                   mins[2],
+                                                                   maxs[2]),
+                                                     tmean = adjust(uconvert.(K,
+                                                                              :tmean),
+                                                                    adjustment[:,
+                                                                               3],
+                                                                    mins[3],
+                                                                    maxs[3]),
+                                                     trng = adjust(uconvert.(K,
+                                                                             :trng),
+                                                                   adjustment[:,
+                                                                              4],
+                                                                   mins[4],
+                                                                   maxs[4]),
+                                                     stl1 = adjust(uconvert.(K,
+                                                                             :stl1mean),
+                                                                   adjustment[:,
+                                                                              5],
+                                                                   mins[5],
+                                                                   maxs[5]),
+                                                     stl2 = adjust(uconvert.(K,
+                                                                             :stl2mean),
+                                                                   adjustment[:,
+                                                                              6],
+                                                                   mins[6],
+                                                                   maxs[6]),
+                                                     stl3 = adjust(uconvert.(K,
+                                                                             :stl3mean),
+                                                                   adjustment[:,
+                                                                              7],
+                                                                   mins[7],
+                                                                   maxs[7]),
+                                                     stl4 = adjust(uconvert.(K,
+                                                                             :stl4mean),
+                                                                   adjustment[:,
+                                                                              8],
+                                                                   mins[8],
+                                                                   maxs[8]),
+                                                     swvl1 = adjust(:swvl1mean,
+                                                                    adjustment[:,
+                                                                               9],
+                                                                    mins[9],
+                                                                    maxs[9]),
+                                                     swvl2 = adjust(:swvl2mean,
+                                                                    adjustment[:,
+                                                                               10],
+                                                                    mins[10],
+                                                                    maxs[10]),
+                                                     swvl3 = adjust(:swvl3mean,
+                                                                    adjustment[:,
+                                                                               11],
+                                                                    mins[11],
+                                                                    maxs[11]),
+                                                     swvl4 = adjust(:swvl4mean,
+                                                                    adjustment[:,
+                                                                               12],
+                                                                    mins[12],
+                                                                    maxs[12]),
+                                                     ssr = adjust(:ssrmean,
+                                                                  adjustment[:,
+                                                                             13],
+                                                                  mins[13],
+                                                                  maxs[13]),
+                                                     tp = adjust(:tpmean,
+                                                                 adjustment[:,
+                                                                            14],
+                                                                 mins[14],
+                                                                 maxs[14])}
+    phylo_traits_adj = @transform phylo_traits_adj {tipNames = join.(split.(:species,
+                                                                            " "),
+                                                                     "_")}
 
     # Convert to dataframe
     dat = DataFrame(collect(phylo_traits_adj))
 
     # Fit lambda models and save
-    try 
-    lambdas = fitLambdas(tree, dat, names(dat)[2:end-1], 0.1)
-    JLD.save("Lambdas_effort_family_$(families[i]).jld", "lambdas", lambdas)
+    try
+        lambdas = fitLambdas(tree, dat, names(dat)[2:(end - 1)], 0.1)
+        JLD.save("Lambdas_effort_family_$(families[i]).jld", "lambdas", lambdas)
     catch
         continue
     end
 end
 
-
-
-
 cera_taxo = JuliaDB.load("CERA_taxo")
 taxonomy = JuliaDB.load("Taxonomy")
 taxonomy = distribute(taxonomy, 12)
-taxo_fil = filter(t->t.species ∈ tip_names, taxonomy)
+taxo_fil = filter(t -> t.species ∈ tip_names, taxonomy)
 big_order = @groupby taxo_fil :order {nspp = length(unique(:species))}
-big_order= filter(b->b.nspp > 50, big_order)
+big_order = filter(b -> b.nspp > 50, big_order)
 JuliaDB.save(big_order, "Big_order")
 
 big_order = JuliaDB.load("Big_order")
@@ -250,31 +501,75 @@ for i in eachindex(orders)
     spp_names = collect(JuliaDB.select(order, :species))
     cross_species = spp_names ∩ tip_names
 
-    order_fil = filter(g->g.species in cross_species, order)
+    order_fil = filter(g -> g.species in cross_species, order)
     missing_species = setdiff(tip_names, cross_species)
     for i in eachindex(missing_species)
         deleteleaf!(tree, join(split(missing_species[i], " "), "_"))
     end
-    
+
     # Group gbif data by Species ID and get mean and percentiles of data
-    phylo_traits = @groupby order_fil :species {tmin = mean(ustrip(:tmin)), tmax = mean(ustrip(:tmax)), tmean = mean(ustrip(:tmean)), trng = mean(ustrip(:trng)), stl1 = mean(ustrip(:stl1mean)), stl2 = mean(ustrip(:stl2mean)), stl3 = mean(ustrip(:stl3mean)), stl4 = mean(ustrip(:stl4mean)), swvl1 = mean(ustrip(:swvl1mean)), swvl2 = mean(ustrip(:swvl2mean)), swvl3 = mean(ustrip(:swvl3mean)), swvl4 = mean(ustrip(:swvl4mean)), ssr = mean(ustrip(:ssrmean)), tp = mean(ustrip(:tpmean))}
+    phylo_traits = @groupby order_fil :species {tmin = mean(ustrip(:tmin)),
+                                                tmax = mean(ustrip(:tmax)),
+                                                tmean = mean(ustrip(:tmean)),
+                                                trng = mean(ustrip(:trng)),
+                                                stl1 = mean(ustrip(:stl1mean)),
+                                                stl2 = mean(ustrip(:stl2mean)),
+                                                stl3 = mean(ustrip(:stl3mean)),
+                                                stl4 = mean(ustrip(:stl4mean)),
+                                                swvl1 = mean(ustrip(:swvl1mean)),
+                                                swvl2 = mean(ustrip(:swvl2mean)),
+                                                swvl3 = mean(ustrip(:swvl3mean)),
+                                                swvl4 = mean(ustrip(:swvl4mean)),
+                                                ssr = mean(ustrip(:ssrmean)),
+                                                tp = mean(ustrip(:tpmean))}
 
     # Add in tip names to data and save
-    phylo_traits = @transform phylo_traits {tipNames = join.(split.(:species, " "), "_")}
+    phylo_traits = @transform phylo_traits {tipNames = join.(split.(:species,
+                                                                    " "), "_")}
 
     # Convert to dataframe
     dat = DataFrame(collect(phylo_traits))
 
     # Fit lambda models and save
-    try 
-    lambdas = fitLambdas(tree, dat, names(dat)[2:end-1], 0.1)
-    JLD.save("Lambdas_order_$(orders[i]).jld", "lambdas", lambdas)
-    catch 
+    try
+        lambdas = fitLambdas(tree, dat, names(dat)[2:(end - 1)], 0.1)
+        JLD.save("Lambdas_order_$(orders[i]).jld", "lambdas", lambdas)
+    catch
         continue
     end
 
-    mins = [197.0K, 197.0K, 197.0K, 0K, 197.0K, 197.0K, 197.0K, 197.0K, 0.0m^3, 0.0m^3, 0.0m^3, 0.0m^3, 0.0J/m^2, 0.0m]
-    maxs = [320.0K, 320.0K, 320.0K, 80K, 320.0K, 320.0K, 320.0K, 320.0K, 1.0m^3, 1.0m^3, 1.0m^3, 1.0m^3, 3.0e7J/m^2, 0.1m]
+    mins = [
+        197.0K,
+        197.0K,
+        197.0K,
+        0K,
+        197.0K,
+        197.0K,
+        197.0K,
+        197.0K,
+        0.0m^3,
+        0.0m^3,
+        0.0m^3,
+        0.0m^3,
+        0.0J / m^2,
+        0.0m
+    ]
+    maxs = [
+        320.0K,
+        320.0K,
+        320.0K,
+        80K,
+        320.0K,
+        320.0K,
+        320.0K,
+        320.0K,
+        1.0m^3,
+        1.0m^3,
+        1.0m^3,
+        1.0m^3,
+        3.0e7J / m^2,
+        0.1m
+    ]
 
     # Load EVi and gbif counts
     total_evi_counts = JLD.load("Total_evi_counts.jld", "total")
@@ -286,29 +581,106 @@ for i in eachindex(orders)
     adjustment[isinf.(adjustment)] .= 1
 
     # Apply adjustment to data grouped by Species ID
-    phylo_traits_adj = @groupby order_fil :species {tmin = adjust(uconvert.(K, :tmin), adjustment[:, 1], mins[1], maxs[1]),tmax = adjust(uconvert.(K, :tmax), adjustment[:, 2], mins[2], maxs[2]), tmean = adjust(uconvert.(K, :tmean), adjustment[:, 3], mins[3], maxs[3]), trng = adjust(uconvert.(K, :trng), adjustment[:, 4], mins[4], maxs[4]), stl1 = adjust(uconvert.(K, :stl1mean), adjustment[:, 5], mins[5], maxs[5]), stl2 = adjust(uconvert.(K, :stl2mean), adjustment[:, 6], mins[6], maxs[6]), stl3 = adjust(uconvert.(K, :stl3mean), adjustment[:, 7], mins[7], maxs[7]), stl4 = adjust(uconvert.(K, :stl4mean), adjustment[:, 8], mins[8], maxs[8]), swvl1 = adjust(:swvl1mean, adjustment[:, 9], mins[9], maxs[9]), swvl2 =  adjust(:swvl2mean, adjustment[:, 10], mins[10], maxs[10]), swvl3 =  adjust(:swvl3mean, adjustment[:, 11], mins[11], maxs[11]), swvl4 =  adjust(:swvl4mean, adjustment[:, 12], mins[12], maxs[12]), ssr =  adjust(:ssrmean, adjustment[:, 13], mins[13], maxs[13]), tp =  adjust(:tpmean, adjustment[:, 14], mins[14], maxs[14])}
-    phylo_traits_adj = @transform phylo_traits_adj {tipNames = join.(split.(:species, " "), "_")}
+    phylo_traits_adj = @groupby order_fil :species {tmin = adjust(uconvert.(K,
+                                                                            :tmin),
+                                                                  adjustment[:,
+                                                                             1],
+                                                                  mins[1],
+                                                                  maxs[1]),
+                                                    tmax = adjust(uconvert.(K,
+                                                                            :tmax),
+                                                                  adjustment[:,
+                                                                             2],
+                                                                  mins[2],
+                                                                  maxs[2]),
+                                                    tmean = adjust(uconvert.(K,
+                                                                             :tmean),
+                                                                   adjustment[:,
+                                                                              3],
+                                                                   mins[3],
+                                                                   maxs[3]),
+                                                    trng = adjust(uconvert.(K,
+                                                                            :trng),
+                                                                  adjustment[:,
+                                                                             4],
+                                                                  mins[4],
+                                                                  maxs[4]),
+                                                    stl1 = adjust(uconvert.(K,
+                                                                            :stl1mean),
+                                                                  adjustment[:,
+                                                                             5],
+                                                                  mins[5],
+                                                                  maxs[5]),
+                                                    stl2 = adjust(uconvert.(K,
+                                                                            :stl2mean),
+                                                                  adjustment[:,
+                                                                             6],
+                                                                  mins[6],
+                                                                  maxs[6]),
+                                                    stl3 = adjust(uconvert.(K,
+                                                                            :stl3mean),
+                                                                  adjustment[:,
+                                                                             7],
+                                                                  mins[7],
+                                                                  maxs[7]),
+                                                    stl4 = adjust(uconvert.(K,
+                                                                            :stl4mean),
+                                                                  adjustment[:,
+                                                                             8],
+                                                                  mins[8],
+                                                                  maxs[8]),
+                                                    swvl1 = adjust(:swvl1mean,
+                                                                   adjustment[:,
+                                                                              9],
+                                                                   mins[9],
+                                                                   maxs[9]),
+                                                    swvl2 = adjust(:swvl2mean,
+                                                                   adjustment[:,
+                                                                              10],
+                                                                   mins[10],
+                                                                   maxs[10]),
+                                                    swvl3 = adjust(:swvl3mean,
+                                                                   adjustment[:,
+                                                                              11],
+                                                                   mins[11],
+                                                                   maxs[11]),
+                                                    swvl4 = adjust(:swvl4mean,
+                                                                   adjustment[:,
+                                                                              12],
+                                                                   mins[12],
+                                                                   maxs[12]),
+                                                    ssr = adjust(:ssrmean,
+                                                                 adjustment[:,
+                                                                            13],
+                                                                 mins[13],
+                                                                 maxs[13]),
+                                                    tp = adjust(:tpmean,
+                                                                adjustment[:,
+                                                                           14],
+                                                                mins[14],
+                                                                maxs[14])}
+    phylo_traits_adj = @transform phylo_traits_adj {tipNames = join.(split.(:species,
+                                                                            " "),
+                                                                     "_")}
 
     # Convert to dataframe
     dat = DataFrame(collect(phylo_traits_adj))
 
     # Fit lambda models and save
-    try 
-    lambdas = fitLambdas(tree, dat, names(dat)[2:end-1], 0.1)
-    JLD.save("Lambdas_effort_order_$(orders[i]).jld", "lambdas", lambdas)
+    try
+        lambdas = fitLambdas(tree, dat, names(dat)[2:(end - 1)], 0.1)
+        JLD.save("Lambdas_effort_order_$(orders[i]).jld", "lambdas", lambdas)
     catch
         continue
     end
 end
 
-
-
 cera_taxo = JuliaDB.load("CERA_taxo")
 taxonomy = JuliaDB.load("Taxonomy")
 taxonomy = distribute(taxonomy, 12)
-taxo_fil = filter(t->t.species ∈ tip_names, taxonomy)
+taxo_fil = filter(t -> t.species ∈ tip_names, taxonomy)
 big_class = @groupby taxo_fil :class {nspp = length(unique(:species))}
-big_class= filter(b->b.nspp > 50, big_class)
+big_class = filter(b -> b.nspp > 50, big_class)
 JuliaDB.save(big_class, "Big_class")
 
 big_class = JuliaDB.load("Big_class")
@@ -327,27 +699,41 @@ for i in eachindex(classes)
     spp_names = collect(JuliaDB.select(class, :species))
     cross_species = spp_names ∩ tip_names
 
-    class_fil = filter(g->g.species in cross_species, class)
+    class_fil = filter(g -> g.species in cross_species, class)
     missing_species = setdiff(tip_names, cross_species)
     for i in eachindex(missing_species)
         deleteleaf!(tree, join(split(missing_species[i], " "), "_"))
     end
-    
+
     # Group gbif data by Species ID and get mean and percentiles of data
-    phylo_traits = @groupby class_fil :species {tmin = mean(ustrip(:tmin)), tmax = mean(ustrip(:tmax)), tmean = mean(ustrip(:tmean)), trng = mean(ustrip(:trng)), stl1 = mean(ustrip(:stl1mean)), stl2 = mean(ustrip(:stl2mean)), stl3 = mean(ustrip(:stl3mean)), stl4 = mean(ustrip(:stl4mean)), swvl1 = mean(ustrip(:swvl1mean)), swvl2 = mean(ustrip(:swvl2mean)), swvl3 = mean(ustrip(:swvl3mean)), swvl4 = mean(ustrip(:swvl4mean)), ssr = mean(ustrip(:ssrmean)), tp = mean(ustrip(:tpmean))}
+    phylo_traits = @groupby class_fil :species {tmin = mean(ustrip(:tmin)),
+                                                tmax = mean(ustrip(:tmax)),
+                                                tmean = mean(ustrip(:tmean)),
+                                                trng = mean(ustrip(:trng)),
+                                                stl1 = mean(ustrip(:stl1mean)),
+                                                stl2 = mean(ustrip(:stl2mean)),
+                                                stl3 = mean(ustrip(:stl3mean)),
+                                                stl4 = mean(ustrip(:stl4mean)),
+                                                swvl1 = mean(ustrip(:swvl1mean)),
+                                                swvl2 = mean(ustrip(:swvl2mean)),
+                                                swvl3 = mean(ustrip(:swvl3mean)),
+                                                swvl4 = mean(ustrip(:swvl4mean)),
+                                                ssr = mean(ustrip(:ssrmean)),
+                                                tp = mean(ustrip(:tpmean))}
 
     # Add in tip names to data and save
-    phylo_traits = @transform phylo_traits {tipNames = join.(split.(:species, " "), "_")}
+    phylo_traits = @transform phylo_traits {tipNames = join.(split.(:species,
+                                                                    " "), "_")}
     JuliaDB.save(phylo_traits, "Phylo_traits_Magnoliopsida")
 
     # Convert to dataframe
     dat = DataFrame(collect(phylo_traits))
 
     # Fit lambda models and save
-    try 
-    lambdas = fitLambdas(tree, dat, names(dat)[2:end-1], 0.1)
-    JLD.save("Lambdas_class_$(classes[i]).jld", "lambdas", lambdas)
-    catch 
+    try
+        lambdas = fitLambdas(tree, dat, names(dat)[2:(end - 1)], 0.1)
+        JLD.save("Lambdas_class_$(classes[i]).jld", "lambdas", lambdas)
+    catch
         continue
     end
 
@@ -379,13 +765,12 @@ for i in eachindex(classes)
     # end
 end
 
-
 cera_taxo = JuliaDB.load("CERA_taxo")
 taxonomy = JuliaDB.load("Taxonomy")
 taxonomy = distribute(taxonomy, 12)
-taxo_fil = filter(t->t.species ∈ tip_names, taxonomy)
+taxo_fil = filter(t -> t.species ∈ tip_names, taxonomy)
 big_phyla = @groupby taxo_fil :phylum {nspp = length(unique(:species))}
-big_phyla= filter(b->b.nspp > 25, big_phyla)
+big_phyla = filter(b -> b.nspp > 25, big_phyla)
 JuliaDB.save(big_phyla, "Big_phyla")
 
 big_phyla = JuliaDB.load("Big_phyla")
@@ -404,26 +789,40 @@ for i in eachindex(phyla)
     spp_names = collect(JuliaDB.select(phylum, :species))
     cross_species = spp_names ∩ tip_names
 
-    phylum_fil = filter(g->g.species in cross_species, phylum)
+    phylum_fil = filter(g -> g.species in cross_species, phylum)
     missing_species = setdiff(tip_names, cross_species)
     for i in eachindex(missing_species)
         deleteleaf!(tree, join(split(missing_species[i], " "), "_"))
     end
-    
+
     # Group gbif data by Species ID and get mean and percentiles of data
-    phylo_traits = @groupby phylum_fil :species {tmin = mean(ustrip(:tmin)), tmax = mean(ustrip(:tmax)), tmean = mean(ustrip(:tmean)), trng = mean(ustrip(:trng)), stl1 = mean(ustrip(:stl1mean)), stl2 = mean(ustrip(:stl2mean)), stl3 = mean(ustrip(:stl3mean)), stl4 = mean(ustrip(:stl4mean)), swvl1 = mean(ustrip(:swvl1mean)), swvl2 = mean(ustrip(:swvl2mean)), swvl3 = mean(ustrip(:swvl3mean)), swvl4 = mean(ustrip(:swvl4mean)), ssr = mean(ustrip(:ssrmean)), tp = mean(ustrip(:tpmean))}
+    phylo_traits = @groupby phylum_fil :species {tmin = mean(ustrip(:tmin)),
+                                                 tmax = mean(ustrip(:tmax)),
+                                                 tmean = mean(ustrip(:tmean)),
+                                                 trng = mean(ustrip(:trng)),
+                                                 stl1 = mean(ustrip(:stl1mean)),
+                                                 stl2 = mean(ustrip(:stl2mean)),
+                                                 stl3 = mean(ustrip(:stl3mean)),
+                                                 stl4 = mean(ustrip(:stl4mean)),
+                                                 swvl1 = mean(ustrip(:swvl1mean)),
+                                                 swvl2 = mean(ustrip(:swvl2mean)),
+                                                 swvl3 = mean(ustrip(:swvl3mean)),
+                                                 swvl4 = mean(ustrip(:swvl4mean)),
+                                                 ssr = mean(ustrip(:ssrmean)),
+                                                 tp = mean(ustrip(:tpmean))}
 
     # Add in tip names to data and save
-    phylo_traits = @transform phylo_traits {tipNames = join.(split.(:species, " "), "_")}
+    phylo_traits = @transform phylo_traits {tipNames = join.(split.(:species,
+                                                                    " "), "_")}
 
     # Convert to dataframe
     dat = DataFrame(collect(phylo_traits))
 
     # Fit lambda models and save
-    try 
-    lambdas = fitLambdas(tree, dat, names(dat)[2:end-1], 0.1)
-    JLD.save("Lambdas_phylum_$(phyla[i]).jld", "lambdas", lambdas)
-    catch 
+    try
+        lambdas = fitLambdas(tree, dat, names(dat)[2:(end - 1)], 0.1)
+        JLD.save("Lambdas_phylum_$(phyla[i]).jld", "lambdas", lambdas)
+    catch
         continue
     end
 

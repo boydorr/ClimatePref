@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: BSD-2-Clause
+
 # Import libraries.
 using Turing, Plots, StatsPlots, Random
 pyplot()
@@ -33,10 +35,11 @@ iterations = 1000
 
 Nsamples = 2000
 Nadapt = 1000
-δ = .85
+δ = 0.85
 num_chains = 2
 
-chains = mapreduce(c -> sample(temppref(data), NUTS(Nsamples,Nadapt, δ)), chainscat, 1:num_chains)
+chains = mapreduce(c -> sample(temppref(data), NUTS(Nsamples, Nadapt, δ)),
+                   chainscat, 1:num_chains)
 subset = chains[Nadapt:Nsamples, :, :]
 plot(subset[[:m, :v]])
 histogram(subset[[:m, :v]])
