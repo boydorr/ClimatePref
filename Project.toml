@@ -1,6 +1,8 @@
 name = "ClimatePref"
 uuid = "fca47ed3-1eba-4660-ae9b-41dfe9aa8fbc"
-version = "0.1.0"
+license = "BSD-2-Clause"
+authors = ["Claire Harris", "Richard Reeve <richard.reeve@glasgow.ac.uk>"]
+version = "1.0.1"
 
 [deps]
 ArchGDAL = "c9ce4bd3-c3d5-55b8-8973-c0e20141b8c3"
@@ -35,25 +37,43 @@ Unitful = "1986cc42-f94f-5a68-af5c-568840ba703d"
 ArchGDAL = "0.5"
 AxisArrays = "0.4"
 Calculus = "0.5"
-DataFrames = "0.20 - 0.22"
+DataFrames = "0.20,0.21,0.22,1"
 GDAL = "1.1"
 GLM = "1.3"
-IndexedTables = "0.7 - 1.0"
+IndexedTables = "0.12,1"
 Interpolations = "0.12"
-JuliaDB = "0.12"
+JuliaDB = "0.12,0.13"
 JuliaDBMeta = "0.4"
-NetCDF = "0.10"
+NetCDF = "0.11"
 Nullables = "1.0"
 OnlineStats = "0.21"
 Optim = "1.2"
-Phylo = "0.4"
-PhyloNetworks = "0.11"
+Phylo = "0.4,0.5"
+PhyloNetworks = "0.11,0.12,0.13,0.14,0.15,0.16"
 Plots = "0.28"
+RCall = "0.13,0.14"
+Random = "1"
 RecipesBase = "0.7"
 Requires = "1.0, 1.1"
+Statistics = "1"
 StatsBase = "0.32"
 Unitful = "1.4"
 julia = "1.6"
+
+[[author_details]]
+name = "Claire Harris"
+orcid = "0000-0003-0852-2340"
+email = "Claire.Harris@defra.gov.uk"
+
+    [[author_details.affiliation]]
+    ror = "03jwrz939"
+[[author_details]]
+name = "Richard Reeve"
+orcid = "0000-0003-2589-8091"
+email = "richard.reeve@glasgow.ac.uk"
+
+    [[author_details.affiliation]]
+    ror = "00vtgdb53"
 
 [extras]
 Pkg = "44cfe95a-1eb2-52ea-b672-e2afdf69b78f"
