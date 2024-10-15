@@ -35,8 +35,8 @@ R" library(raster); library(fields); library(viridis);library(rgdal);library(ras
           margin = list(FUN = 'sum'), colorkey=list(space='bottom'),
           par.settings=viridisTheme) +
   layer(sp.polygons(world, lwd=1))
-  #png('gbif_plot_equal_area.png', 1000, 800)
-  pdf('gbifbias2.pdf', paper = 'a4r', width = 11, height = 8)
+  png('Figure_1.png', width = 11, height = 8, units = 'in', res = 300)
+  #pdf('Figure_1.pdf', paper = 'a4r', width = 11, height = 8, dpi = 300)
     print(l)
   dev.off()
   "
