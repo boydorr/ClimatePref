@@ -13,6 +13,9 @@ function __init__()
     end
 end
 
+# Path into package
+path(path...; dir::String = "test") = joinpath(@__DIR__, "..", dir, path...)
+
 module Units
 
 import Unitful

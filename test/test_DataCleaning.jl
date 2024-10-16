@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: BSD-2-Clause
+
 using ClimatePref
 using ClimatePref.Units
 using Unitful
