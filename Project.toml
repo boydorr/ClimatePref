@@ -32,7 +32,7 @@ StatsBase = "2913bbd2-ae8a-5f71-8c99-4fb6c76f3a91"
 Unitful = "1986cc42-f94f-5a68-af5c-568840ba703d"
 
 [compat]
-ArchGDAL = "0.5"
+ArchGDAL = "0.5, 0.10"
 AxisArrays = "0.4"
 Calculus = "0.5"
 DataFrames = "0.20,0.21,0.22,1"
@@ -64,15 +64,15 @@ julia = "1.6"
 
 [[author_details]]
 name = "Claire Harris"
-orcid = "0000-0003-0852-2340"
 email = "Claire.Harris@defra.gov.uk"
+orcid = "0000-0003-0852-2340"
 
     [[author_details.affiliation]]
     ror = "03jwrz939"
 [[author_details]]
 name = "Richard Reeve"
-orcid = "0000-0003-2589-8091"
 email = "richard.reeve@glasgow.ac.uk"
+orcid = "0000-0003-2589-8091"
 
     [[author_details.affiliation]]
     ror = "00vtgdb53"
